@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Semantic design tokens.
+ * Values derive from `Belsalameh Brand Guidelines.pdf`
+ * (#2E3A6E #6D5FA3 #B48DBF #F7A663 #FADCA8 #FFF3E0).
+ *
+ * Format is "R G B" so Tailwind's `<alpha-value>` slash syntax works
+ * (e.g. `bg-primary/10`). Re-skin the whole platform from this block in
+ * Phase 5 — nothing else hard-codes brand colours.
+ */
+:root {
+  --canvas: 247 247 251;
+  --surface: 255 255 255;
+  --surface-muted: 243 243 248;
+  --border: 225 226 235;
+
+  --ink: 30 37 66; /* near brand indigo, tuned for body contrast (~13:1 on white) */
+  --ink-muted: 84 92 124;
+  --ink-subtle: 128 134 158;
+
+  --primary: 46 58 110; /* brand indigo */
+  --primary-ink: 255 255 255;
+
+  --accent: 247 166 99; /* brand orange — decorative / large only; pair with --primary text */
+  --accent-ink: 46 58 110;
+
+  --success: 21 122 74;
+  --warning: 247 166 99;
+  --danger: 193 45 45;
+  --info: 109 95 163; /* brand purple */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: rgb(var(--canvas));
+    color: rgb(var(--ink));
+    font-family: theme("fontFamily.sans");
+  }
+  *,
+  *::before,
+  *::after {
+    border-color: rgb(var(--border));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+  }
+  h1, h2, h3, h4 {
+    font-family: theme("fontFamily.display");
+  }
+}

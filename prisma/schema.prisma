@@ -1,0 +1,235 @@
+// Balsalameh platform — data model
+// ---------------------------------------------------------------------------
+// Phase 1 (admin) renders from `src/lib/mock-data.ts` so the console is
+// reviewable without a database. This schema + `prisma/seed.ts` are the
+// target for Phase 3 (payment integration), when the admin swaps its data
+// source from mock modules to Prisma queries.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Admin accounts ────────────────────────────────────────────────────────
+// Buyers never authenticate. Only staff have accounts.
+
+enum AdminRole {
+  OWNER
+  ADMIN
+  FINANCE
+  SUPPORT
+  VIEWER
+}
+
+enum AdminUserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+model AdminUser {
+  id               String          @id @default(cuid())
+  email            String          @unique
+  name             String
+  passwordHash     String?
+  role             AdminRole       @default(VIEWER)
+  status           AdminUserStatus @default(INVITED)
+  twoFactorEnabled Boolean         @default(false)
+  twoFactorSecret  String?
+  lastLoginAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  auditLogs AuditLog[]
+}
+
+// ── Members (subscribers) ─────────────────────────────────────────────────
+// Spec: store ONLY full name, email, membership ID, expiry month + year.
+// The remaining fields are operational links, kept visually separate in the UI.
+
+enum MemberStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  REVOKED
+}
+
+model Member {
+  id           String       @id @default(cuid())
+  membershipId String       @unique // human-facing, e.g. BSL-7Q2M-9XKD
+  fullName     String // "as on passport"
+  email        String
+  expiryMonth  Int // 1-12
+  expiryYear   Int
+  status       MemberStatus @default(ACTIVE)
+  purchasedAt  DateTime
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?      @unique
+  emails        EmailLog[]
+
+  @@index([email])
+  @@index([status])
+}
+
+// ── Transactions ─────────────────────────────────────────────────────────
+
+enum TransactionStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+model Transaction {
+  id                  String            @id @default(cuid())
+  reference           String            @unique // our order ref sent to the gateway
+  provider            String            @default("MEPS")
+  providerRef         String? // gateway transaction id
+  amountMinor         Int // amount in minor units
+  currency            String            @default("JOD") // PLACEHOLDER — confirm with business
+  status              TransactionStatus @default(PENDING)
+  fullName            String
+  email               String
+  legalTermsVersion   String?
+  legalPrivacyVersion String?
+  failureReason       String?
+  rawRequest          Json?
+  rawResponse         Json?
+  ipnReceivedAt       DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  member Member?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WebhookEvent {
+  id             String    @id @default(cuid())
+  provider       String    @default("MEPS")
+  dedupeKey      String    @unique
+  signatureValid Boolean
+  payload        Json
+  result         String? // ok | ignored | error
+  error          String?
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id                String   @id @default(cuid())
+  type              String // proof_of_membership | ...
+  toAddress         String
+  subject           String
+  status            String // queued | sent | delivered | bounced | failed
+  providerMessageId String?
+  error             String?
+  createdAt         DateTime @default(now())
+
+  member   Member? @relation(fields: [memberId], references: [id])
+  memberId String?
+
+  @@index([status])
+}
+
+// ── Content management ───────────────────────────────────────────────────
+
+model ContentBlock {
+  id            String   @id @default(cuid())
+  pageSlug      String // home | how-it-works | about | contact
+  key           String // hero | steps | cta ...
+  data          Json // { heading, body, imageRef, ctaLabel, ... }
+  isPlaceholder Boolean  @default(true)
+  published     Boolean  @default(false)
+  updatedBy     String?
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  @@unique([pageSlug, key])
+}
+
+model LegalDocument {
+  id            String   @id @default(cuid())
+  slug          String // terms | fair-usage | privacy
+  version       String // e.g. "2026-09-01"
+  title         String
+  bodyMarkdown  String
+  effectiveAt   DateTime
+  published     Boolean  @default(false)
+  isPlaceholder Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@unique([slug, version])
+  @@index([slug, published])
+}
+
+model FaqItem {
+  id            String   @id @default(cuid())
+  question      String
+  answer        String
+  sortOrder     Int      @default(0)
+  published     Boolean  @default(false)
+  isPlaceholder Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id            String   @id @default(cuid())
+  key           String   @unique // proof_of_membership | ...
+  subject       String
+  bodyHtml      String
+  bodyText      String
+  variables     Json // documented tokens: {{fullName}} {{membershipId}} {{expiry}} ...
+  isPlaceholder Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+}
+
+model MediaAsset {
+  id            String   @id @default(cuid())
+  label         String
+  url           String
+  kind          String // image | document
+  isPlaceholder Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+// ── Settings (typed key/value) ──────────────────────────────────────────
+
+model Setting {
+  key       String   @id // "membership.priceMinor", "gateway.mode", ...
+  group     String // membership | branding | gateway | email | general
+  valueJson Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+}
+
+// ── Audit trail ─────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String // member.created | setting.updated | user.invited ...
+  entity     String
+  entityId   String
+  diff       Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor   AdminUser? @relation(fields: [actorId], references: [id])
+  actorId String?
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
