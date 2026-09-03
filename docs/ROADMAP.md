@@ -66,13 +66,18 @@ Route group `src/app/(site)`:
 - **Landing page** — hero, "what's included" (placeholder benefits), the three
   spec "how it works" steps, FAQ teaser, final CTA. CSS-gradient hero, no images,
   to stay light on airport Wi-Fi.
-- **Checkout form** (`/join`, the focus) — Full Name (as on passport), Email,
-  Confirm Email; **no phone field**; the two mandatory consent checkboxes linking
-  to the legal stubs. Shared zod schema ([lib/checkout.ts](../src/lib/checkout.ts))
-  validates on the client (inline errors + a focus-managed error summary) and
-  again in the server action. On success it hands off to `/checkout/processing`
-  (a placeholder standing in for the MEPS hosted page); `/checkout/success` shows
-  an example Proof of Membership.
+- **Checkout form** — a **modal on the landing page**, opened by the header
+  button, the hero / final CTAs, and a persistent floating "bubble". The page
+  behind is greyed out; the modal is dismissed **only by its X button**
+  (backdrop click and Escape do nothing, by request); focus is trapped and
+  restored. `/join` is kept as a deep link that redirects to `/?join=1` and
+  opens the modal. Fields: Full Name (as on passport), Email, Confirm Email;
+  **no phone field**; the two mandatory consent checkboxes linking to the legal
+  stubs. Shared zod schema ([lib/checkout.ts](../src/lib/checkout.ts)) validates
+  on the client (inline errors + a focus-managed error summary) and again in the
+  server action. On success it hands off to `/checkout/processing` (a
+  placeholder standing in for the MEPS hosted page); `/checkout/success` shows an
+  example Proof of Membership.
 - **Legal stubs** (`/legal/terms`, `/legal/privacy`) and **FAQ** — all copy is
   placeholder from [lib/site-content.ts](../src/lib/site-content.ts); a preview
   ribbon and a site-wide noindex stay on until `PUBLIC_SITE_ENABLED=true`.

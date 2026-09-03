@@ -15,7 +15,7 @@ foundation here is shaped so they plug in without rework.
 |------|-------|-------|
 | 0 | Foundations: tooling, design tokens, component library, data model, auth skeleton | ✅ done |
 | 1 | **Admin console** — dashboard, members (+ verification), transactions (+ webhook log), my profile; username/password login | ✅ done |
-| 2 | **Public site** — landing page + checkout form (passport name + email + two consent checkboxes) + legal/FAQ stubs + payment hand-off placeholder | ✅ built; visual polish in Phase 5 |
+| 2 | **Public site** — friendly brand-styled landing page; checkout form as an X-only modal (passport name + email + two consent checkboxes, no phone); legal/FAQ stubs; payment hand-off placeholder | ✅ built; more polish in Phase 5 |
 | 3 | MEPS payment integration + Proof of Membership email | ⬜ not started |
 | 4 | Replace placeholder content with company-supplied information | ⬜ not started |
 | 5 | Visual refinement & branding rollout | ⬜ not started |
@@ -83,9 +83,9 @@ src/
   middleware.ts          admin route protection (stub → Auth.js in Phase 3)
   app/
     (site)/              PUBLIC SITE
-      layout.tsx         header + footer + pre-launch preview ribbon
-      page.tsx           landing page
-      join/              checkout form (the focus) + server action
+      layout.tsx         header + footer + preview ribbon + <JoinProvider>
+      page.tsx           landing page (brand-styled)
+      join/page.tsx      deep link → redirects to /?join=1 (opens the modal)
       checkout/          processing (payment hand-off) + success placeholders
       legal/[slug]       Terms / Privacy stubs (linked from the consent checkboxes)
       faq/               FAQ (placeholder Q&A)
@@ -99,7 +99,9 @@ src/
       account/           my profile — name, email, change password
   components/
     ui/                  primitives (button, card, table, field, badge, …)
-    site/                header, footer, preview ribbon
+    site/                header, footer, preview ribbon, airplane pattern,
+                         join.tsx (modal provider + trigger + bubble + dialog),
+                         checkout-form.tsx, checkout-actions.ts
     admin/               shell (sidebar, topbar, account menu, page header)
     dashboard/           stat tile, members trend chart
   lib/

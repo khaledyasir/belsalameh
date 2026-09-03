@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PreviewRibbon } from "@/components/site/preview-ribbon";
+import { JoinProvider } from "@/components/site/join";
 import { siteEnabled } from "@/lib/site-content";
 
 export const metadata: Metadata = {
@@ -12,11 +13,13 @@ export const metadata: Metadata = {
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas">
-      <PreviewRibbon />
-      <SiteHeader />
-      <main className="flex-1">{children}</main>
-      <SiteFooter />
-    </div>
+    <JoinProvider>
+      <div className="flex min-h-dvh flex-col bg-surface">
+        <PreviewRibbon />
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+      </div>
+    </JoinProvider>
   );
 }

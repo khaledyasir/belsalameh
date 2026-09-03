@@ -3,7 +3,7 @@
 import { useActionState, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { checkoutSchema, toFieldErrors, initialCheckoutState, type CheckoutFieldErrors } from "@/lib/checkout";
-import { startCheckout } from "./actions";
+import { startCheckout } from "./checkout-actions";
 import { cn } from "@/lib/utils";
 
 type Values = {

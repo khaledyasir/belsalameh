@@ -16,10 +16,10 @@ export const SITE = {
 
   hero: {
     eyebrow: "Balsalameh Membership",
-    heading: "Your membership for a calmer journey through the airport",
-    body: "Placeholder introduction. The company will provide the final text describing what the membership includes and who it is for.",
+    heading: "Travel with a little more ease",
+    body: "Placeholder introduction — a warm, welcoming line or two about the membership. The company will provide the final wording describing what it includes and who it is for.",
     primaryCta: "Get your membership",
-    secondaryCta: "How it works",
+    secondaryCta: "See how it works",
   },
 
   included: {
@@ -61,8 +61,8 @@ export const SITE = {
   },
 
   finalCta: {
-    heading: "Ready to join?",
-    body: "Placeholder closing line.",
+    heading: "Ready when you are",
+    body: "Placeholder closing line — a friendly nudge to join.",
     cta: "Get your membership",
   },
 
