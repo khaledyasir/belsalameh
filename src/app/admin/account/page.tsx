@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { guard } from "@/lib/guard";
-import { getAdmin } from "@/lib/admin-store";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody, CardFooter } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
@@ -22,8 +21,7 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{ profile?: string; password?: string }>;
 }) {
-  await guard();
-  const admin = await getAdmin();
+  const { user: admin } = await guard();
   const sp = await searchParams;
   const pwMsg = sp.password ? PASSWORD_MSG[sp.password] : undefined;
 

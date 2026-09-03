@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
-import { listWebhookEvents, type WebhookEvent } from "@/lib/mock-data";
+import { listWebhookEvents, type WebhookEvent } from "@/lib/queries";
 import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Webhook / IPN log" };
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Webhook / IPN log" };
 export default async function WebhooksPage() {
   await guard();
 
-  const rows = listWebhookEvents();
+  const rows = await listWebhookEvents();
 
   const columns: Column<WebhookEvent>[] = [
     { key: "key", header: "Dedupe key", cell: (w) => <span className="font-mono text-xs">{w.dedupeKey}</span> },

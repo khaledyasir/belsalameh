@@ -2,14 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { checkoutSchema, toFieldErrors, type CheckoutState } from "@/lib/checkout";
+import { createPendingTransaction } from "@/lib/payments";
 
 /**
- * Validates the checkout form and hands off to payment.
+ * Validates the checkout form, creates a PENDING transaction, and hands off to
+ * payment.
  *
- * PHASE 3 will replace the hand-off body with: create a Transaction(PENDING),
- * store the agreed legal-document versions, sign the request per the MEPS
- * manual, and redirect to the MEPS hosted payment page. For now it redirects to
- * a placeholder page that stands in for the gateway.
+ * PHASE 3: replace the redirect target with a signed request to the MEPS hosted
+ * payment page. The transaction row and its `reference` are already what the
+ * webhook/IPN handler will look up.
  */
 export async function startCheckout(
   _prev: CheckoutState,
@@ -27,6 +28,10 @@ export async function startCheckout(
     return { errors: toFieldErrors(parsed.error), formError: "Please correct the highlighted fields." };
   }
 
-  const ref = "BSL-ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-  redirect(`/checkout/processing?ref=${ref}`);
+  const { reference } = await createPendingTransaction({
+    fullName: parsed.data.fullName,
+    email: parsed.data.email,
+  });
+
+  redirect(`/checkout/processing?ref=${encodeURIComponent(reference)}`);
 }

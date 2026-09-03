@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { GATEWAY_MODE } from "@/lib/mock-data";
+import { GATEWAY_MODE } from "@/lib/config";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata: Metadata = {

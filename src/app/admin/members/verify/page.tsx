@@ -6,7 +6,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MemberStatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { findMemberForVerification } from "@/lib/mock-data";
+import { findMemberForVerification } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Verify member" };
 
@@ -14,7 +14,7 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
   await guard();
 
   const { q = "" } = await searchParams;
-  const results = q ? findMemberForVerification(q) : [];
+  const results = q ? await findMemberForVerification(q) : [];
 
   return (
     <div className="mx-auto max-w-3xl">

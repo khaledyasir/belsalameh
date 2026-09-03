@@ -1,15 +1,15 @@
 import { getSession } from "@/lib/auth";
-import { listMembers } from "@/lib/mock-data";
+import { listMembers } from "@/lib/queries";
 
 /**
- * CSV export of members. Phase 3: stream from the database and record an
- * audit entry (member data export is a logged, permissioned action).
+ * CSV export of members. A future refinement: stream from the database and
+ * record an audit entry (member data export is a logged action).
  */
 export async function GET() {
   const session = await getSession();
   if (!session) return new Response("Unauthorised", { status: 401 });
 
-  const { rows } = listMembers({ pageSize: 100000 });
+  const { rows } = await listMembers({ pageSize: 100000 });
   const header = ["Full name", "Email", "Membership ID", "Expiry"];
   const csv = [
     header.join(","),

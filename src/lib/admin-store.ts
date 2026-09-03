@@ -1,81 +1,61 @@
 import "server-only";
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { db } from "./db";
 
 /**
- * ⚠️ PHASE 1 FILE-BASED ADMIN CREDENTIAL STORE.
+ * Admin account access (SQL Server, `AdminUsers` table).
  *
- * One admin account, persisted to `.data/admin.json` (gitignored). It is seeded
- * from ADMIN_* env vars on first run, then managed from Admin › My profile.
- *
- * Phase 3 replacement: a hashed credential row in the database, verified by
- * Auth.js. The exported functions keep the same signatures.
+ * Passwords are stored as scrypt(salt, password) — `passwordHash` +
+ * `passwordSalt` columns. No plaintext, no reversible encryption.
  */
 
 export type AdminRecord = {
+  id: string;
   username: string;
   name: string;
   email: string;
-  salt: string;
-  hash: string;
-  updatedAt: string;
+  passwordHash: string;
+  passwordSalt: string;
 };
-
-const FILE = path.join(process.cwd(), ".data", "admin.json");
 
 function hashPassword(password: string, salt: string): string {
   return scryptSync(password, salt, 64).toString("hex");
 }
 
-function makeCredential(password: string): { salt: string; hash: string } {
-  const salt = randomBytes(16).toString("hex");
-  return { salt, hash: hashPassword(password, salt) };
+export function makeCredential(password: string): { passwordHash: string; passwordSalt: string } {
+  const passwordSalt = randomBytes(16).toString("hex");
+  return { passwordSalt, passwordHash: hashPassword(password, passwordSalt) };
 }
 
-async function seed(): Promise<AdminRecord> {
-  const password = process.env.ADMIN_PASSWORD || "admin1234";
-  const rec: AdminRecord = {
-    username: process.env.ADMIN_USERNAME || "admin",
-    name: process.env.ADMIN_NAME || "Administrator",
-    email: process.env.ADMIN_EMAIL || "admin@balsalameh.example",
-    ...makeCredential(password),
-    updatedAt: new Date().toISOString(),
-  };
-  await fs.mkdir(path.dirname(FILE), { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify(rec, null, 2), "utf8");
-  return rec;
-}
-
-export async function getAdmin(): Promise<AdminRecord> {
-  try {
-    return JSON.parse(await fs.readFile(FILE, "utf8")) as AdminRecord;
-  } catch {
-    return seed();
-  }
-}
-
-async function save(rec: AdminRecord): Promise<void> {
-  await fs.mkdir(path.dirname(FILE), { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify({ ...rec, updatedAt: new Date().toISOString() }, null, 2), "utf8");
-}
-
-export async function verifyCredentials(username: string, password: string): Promise<boolean> {
-  const rec = await getAdmin();
-  if (username.trim().toLowerCase() !== rec.username.toLowerCase()) return false;
-  const attempt = Buffer.from(hashPassword(password, rec.salt), "hex");
-  const stored = Buffer.from(rec.hash, "hex");
+export function verifyPassword(record: Pick<AdminRecord, "passwordHash" | "passwordSalt">, password: string): boolean {
+  const attempt = Buffer.from(hashPassword(password, record.passwordSalt), "hex");
+  const stored = Buffer.from(record.passwordHash, "hex");
   return attempt.length === stored.length && timingSafeEqual(attempt, stored);
 }
 
-export async function updateProfile(input: { name: string; email: string }): Promise<void> {
-  const rec = await getAdmin();
-  await save({ ...rec, name: input.name.trim(), email: input.email.trim() });
+export async function getAdminById(id: string): Promise<AdminRecord | null> {
+  return db.adminUser.findUnique({ where: { id } });
 }
 
-export async function changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
-  const rec = await getAdmin();
-  if (!(await verifyCredentials(rec.username, currentPassword))) return false;
-  await save({ ...rec, ...makeCredential(newPassword) });
+export async function getAdminByUsername(username: string): Promise<AdminRecord | null> {
+  return db.adminUser.findUnique({ where: { username: username.trim().toLowerCase() } });
+}
+
+export async function recordLogin(id: string): Promise<void> {
+  await db.adminUser.update({ where: { id }, data: { lastLoginAt: new Date() } });
+}
+
+export async function updateProfile(id: string, input: { name: string; email: string }): Promise<void> {
+  await db.adminUser.update({
+    where: { id },
+    data: { name: input.name.trim(), email: input.email.trim().toLowerCase() },
+  });
+}
+
+/** Returns true on success (current password matched). */
+export async function changePassword(id: string, currentPassword: string, newPassword: string): Promise<boolean> {
+  const admin = await getAdminById(id);
+  if (!admin || !verifyPassword(admin, currentPassword)) return false;
+  await db.adminUser.update({ where: { id }, data: makeCredential(newPassword) });
   return true;
 }

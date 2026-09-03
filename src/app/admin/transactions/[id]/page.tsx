@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TransactionStatusBadge } from "@/components/ui/status-badge";
-import { getTransaction, getMember } from "@/lib/mock-data";
+import { getTransaction, getMember } from "@/lib/queries";
 import { formatMoney, formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Transaction" };
@@ -15,10 +15,10 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   await guard();
 
   const { id } = await params;
-  const txn = getTransaction(id);
+  const txn = await getTransaction(id);
   if (!txn) notFound();
 
-  const member = txn.memberId ? getMember(txn.memberId) : null;
+  const member = txn.memberId ? await getMember(txn.memberId) : null;
   const canRefund = txn.status === "CAPTURED";
 
   const timeline = [

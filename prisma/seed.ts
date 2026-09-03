@@ -1,78 +1,42 @@
 /**
- * Database seed (Phase 3+). Requires DATABASE_URL and a generated Prisma client:
- *   npm run prisma:generate && npm run prisma:migrate && npm run db:seed
+ * Seeds the first admin account from .env, idempotently.
  *
- * Seeds only structural + placeholder data — never invented company facts.
+ *   npm run prisma:generate      # once, and after schema changes
+ *   npx prisma db push           # create the tables (or run db/mssql-schema.sql)
+ *   npm run db:seed
+ *
+ * Reads ADMIN_USERNAME / ADMIN_PASSWORD / ADMIN_EMAIL / ADMIN_NAME.
+ * Re-running updates the name/email and (if ADMIN_PASSWORD changed) the password.
  */
 import { PrismaClient } from "@prisma/client";
+import { randomBytes, scryptSync } from "node:crypto";
 
 const db = new PrismaClient();
 
+function makeCredential(password: string) {
+  const passwordSalt = randomBytes(16).toString("hex");
+  const passwordHash = scryptSync(password, passwordSalt, 64).toString("hex");
+  return { passwordHash, passwordSalt };
+}
+
 async function main() {
-  // ── Settings ─────────────────────────────────────────────────────────────
-  const settings: { key: string; group: string; valueJson: unknown }[] = [
-    { key: "general.siteName", group: "general", valueJson: "Balsalameh" },
-    { key: "general.supportEmail", group: "general", valueJson: "support@example.com" }, // PLACEHOLDER
-    { key: "general.timezone", group: "general", valueJson: "Asia/Amman" },
-    { key: "membership.priceMinor", group: "membership", valueJson: 25000 }, // PLACEHOLDER
-    { key: "membership.currency", group: "membership", valueJson: "JOD" }, // PLACEHOLDER
-    { key: "membership.durationMonths", group: "membership", valueJson: 12 }, // PLACEHOLDER
-    { key: "membership.idPrefix", group: "membership", valueJson: "BSL" },
-    { key: "gateway.mode", group: "gateway", valueJson: "TEST" },
-    { key: "email.fromAddress", group: "email", valueJson: "membership@example.com" }, // PLACEHOLDER
-  ];
-  for (const s of settings) {
-    await db.setting.upsert({
-      where: { key: s.key },
-      create: { key: s.key, group: s.group, valueJson: s.valueJson as object },
-      update: { valueJson: s.valueJson as object },
+  const username = (process.env.ADMIN_USERNAME || "admin").toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "admin1234";
+  const email = (process.env.ADMIN_EMAIL || "admin@balsalameh.example").toLowerCase();
+  const name = process.env.ADMIN_NAME || "Administrator";
+
+  const existing = await db.adminUser.findUnique({ where: { username } });
+
+  if (!existing) {
+    await db.adminUser.create({ data: { username, email, name, ...makeCredential(password) } });
+    console.log(`Created admin "${username}".`);
+  } else {
+    await db.adminUser.update({
+      where: { username },
+      data: { email, name, ...makeCredential(password) },
     });
+    console.log(`Updated admin "${username}" (name, email, password).`);
   }
-
-  // ── Owner admin account (password set out-of-band in Phase 3) ────────────
-  await db.adminUser.upsert({
-    where: { email: "owner@balsalameh.example" },
-    create: { email: "owner@balsalameh.example", name: "Platform Owner", role: "OWNER", status: "INVITED" },
-    update: {},
-  });
-
-  // ── Legal document stubs (empty — pending company text + legal review) ───
-  for (const slug of ["terms", "privacy"] as const) {
-    await db.legalDocument.upsert({
-      where: { slug_version: { slug, version: "draft-0" } },
-      create: {
-        slug,
-        version: "draft-0",
-        title: slug === "terms" ? "Terms & Conditions and Fair Usage Policy" : "Privacy Policy",
-        bodyMarkdown: "> PLACEHOLDER — awaiting company-supplied text and legal review.",
-        effectiveAt: new Date(),
-        published: false,
-        isPlaceholder: true,
-      },
-      update: {},
-    });
-  }
-
-  // ── Proof of Membership email template ─────────────────────────────────
-  await db.emailTemplate.upsert({
-    where: { key: "proof_of_membership" },
-    create: {
-      key: "proof_of_membership",
-      subject: "Your Balsalameh membership confirmation",
-      bodyHtml:
-        "<h1>Welcome to Balsalameh</h1><p>Your membership is confirmed.</p>" +
-        "<p><strong>Full Name (as on passport):</strong> {{fullName}}</p>" +
-        "<p><strong>Membership ID:</strong> {{membershipId}}</p>" +
-        "<p><strong>Expiry:</strong> {{expiry}}</p>",
-      bodyText:
-        "Welcome to Balsalameh\n\nFull Name (as on passport): {{fullName}}\nMembership ID: {{membershipId}}\nExpiry: {{expiry}}",
-      variables: ["{{fullName}}", "{{membershipId}}", "{{expiry}}", "{{supportEmail}}", "{{companyLegalName}}"],
-      isPlaceholder: true,
-    },
-    update: {},
-  });
-
-  console.log("Seed complete: settings, owner user, legal stubs, email template.");
 }
 
 main()

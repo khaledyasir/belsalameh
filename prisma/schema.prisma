@@ -1,9 +1,10 @@
-// Balsalameh platform — data model
+// Balsalameh platform — data model (Microsoft SQL Server)
 // ---------------------------------------------------------------------------
-// Phase 1 (admin) renders from `src/lib/mock-data.ts` so the console is
-// reviewable without a database. This schema + `prisma/seed.ts` are the
-// target for Phase 3 (payment integration), when the admin swaps its data
-// source from mock modules to Prisma queries.
+// Apply with:   npx prisma db push        (or: npx prisma migrate deploy)
+// Inspect in SSMS: db/mssql-schema.sql is the hand-written equivalent DDL.
+//
+// SQL Server has no enum type, so "enum" columns are NVARCHAR with a CHECK
+// constraint (see the .sql file); allowed values are listed next to each field.
 // ---------------------------------------------------------------------------
 
 generator client {
@@ -11,225 +12,127 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
-// ── Admin accounts ────────────────────────────────────────────────────────
-// Buyers never authenticate. Only staff have accounts.
-
-enum AdminRole {
-  OWNER
-  ADMIN
-  FINANCE
-  SUPPORT
-  VIEWER
-}
-
-enum AdminUserStatus {
-  INVITED
-  ACTIVE
-  SUSPENDED
-}
-
+/// Staff accounts for the admin console. Buyers never authenticate.
 model AdminUser {
-  id               String          @id @default(cuid())
-  email            String          @unique
-  name             String
-  passwordHash     String?
-  role             AdminRole       @default(VIEWER)
-  status           AdminUserStatus @default(INVITED)
-  twoFactorEnabled Boolean         @default(false)
-  twoFactorSecret  String?
-  lastLoginAt      DateTime?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  id           String    @id @default(cuid()) @db.NVarChar(30)
+  username     String     @unique @db.NVarChar(50)
+  email        String     @unique @db.NVarChar(256)
+  name         String     @db.NVarChar(120)
+  passwordHash String     @db.NVarChar(256)
+  passwordSalt String     @db.NVarChar(64)
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   auditLogs AuditLog[]
+
+  @@map("AdminUsers")
 }
 
-// ── Members (subscribers) ─────────────────────────────────────────────────
-// Spec: store ONLY full name, email, membership ID, expiry month + year.
-// The remaining fields are operational links, kept visually separate in the UI.
-
-enum MemberStatus {
-  ACTIVE
-  EXPIRING_SOON
-  EXPIRED
-  REVOKED
-}
-
+/// One row per subscriber. The website spec permits storing only:
+/// full name, email, Membership ID, expiry month + year. The remaining
+/// columns are operational links, kept separate in the UI.
 model Member {
-  id           String       @id @default(cuid())
-  membershipId String       @unique // human-facing, e.g. BSL-7Q2M-9XKD
-  fullName     String // "as on passport"
-  email        String
+  id           String   @id @default(cuid()) @db.NVarChar(30)
+  membershipId String   @unique @db.NVarChar(20) // BSL-XXXX-XXXX
+  fullName     String   @db.NVarChar(120)
+  email        String   @db.NVarChar(256)
   expiryMonth  Int // 1-12
   expiryYear   Int
-  status       MemberStatus @default(ACTIVE)
+  status       String   @default("ACTIVE") @db.NVarChar(20) // ACTIVE | EXPIRED | REVOKED
   purchasedAt  DateTime
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  transaction   Transaction? @relation(fields: [transactionId], references: [id])
-  transactionId String?      @unique
+  transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transactionId String?      @unique @db.NVarChar(30)
   emails        EmailLog[]
 
   @@index([email])
   @@index([status])
+  @@map("Members")
 }
 
-// ── Transactions ─────────────────────────────────────────────────────────
-
-enum TransactionStatus {
-  PENDING
-  AUTHORIZED
-  CAPTURED
-  FAILED
-  REFUNDED
-}
-
+/// A payment attempt. Created PENDING at checkout; moved to CAPTURED by the
+/// payment-confirmation path (manual now, MEPS webhook in Phase 3).
 model Transaction {
-  id                  String            @id @default(cuid())
-  reference           String            @unique // our order ref sent to the gateway
-  provider            String            @default("MEPS")
-  providerRef         String? // gateway transaction id
-  amountMinor         Int // amount in minor units
-  currency            String            @default("JOD") // PLACEHOLDER — confirm with business
-  status              TransactionStatus @default(PENDING)
-  fullName            String
-  email               String
-  legalTermsVersion   String?
-  legalPrivacyVersion String?
-  failureReason       String?
-  rawRequest          Json?
-  rawResponse         Json?
-  ipnReceivedAt       DateTime?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  id                     String    @id @default(cuid()) @db.NVarChar(30)
+  reference              String    @unique @db.NVarChar(40) // our order reference
+  provider               String    @default("MEPS") @db.NVarChar(20)
+  providerRef            String?   @db.NVarChar(100) // gateway transaction id
+  amountMinor            Int
+  currency               String    @default("JOD") @db.NVarChar(3)
+  status                 String    @default("PENDING") @db.NVarChar(20) // PENDING | CAPTURED | FAILED | REFUNDED
+  fullName               String    @db.NVarChar(120)
+  email                  String    @db.NVarChar(256)
+  consentTermsAccepted   Boolean   @default(false)
+  consentPrivacyAccepted Boolean   @default(false)
+  consentVersion         String?   @db.NVarChar(20)
+  failureReason          String?   @db.NVarChar(400)
+  rawResponse            String?   @db.NVarChar(Max) // gateway payload (JSON text)
+  ipnReceivedAt          DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   member Member?
 
   @@index([status])
   @@index([createdAt])
+  @@map("Transactions")
 }
 
+/// Inbound payment notifications (MEPS IPN). Dedupe key makes processing
+/// idempotent. Ready for Phase 3.
 model WebhookEvent {
-  id             String    @id @default(cuid())
-  provider       String    @default("MEPS")
-  dedupeKey      String    @unique
-  signatureValid Boolean
-  payload        Json
-  result         String? // ok | ignored | error
-  error          String?
+  id             String    @id @default(cuid()) @db.NVarChar(30)
+  provider       String    @default("MEPS") @db.NVarChar(20)
+  dedupeKey      String    @unique @db.NVarChar(200)
+  signatureValid Boolean   @default(false)
+  payload        String    @db.NVarChar(Max)
+  result         String?   @db.NVarChar(20) // ok | ignored | error
+  error          String?   @db.NVarChar(400)
   processedAt    DateTime?
   createdAt      DateTime  @default(now())
 
   @@index([createdAt])
+  @@map("WebhookEvents")
 }
 
+/// Delivery log for the Proof of Membership email (and future system mail).
 model EmailLog {
-  id                String   @id @default(cuid())
-  type              String // proof_of_membership | ...
-  toAddress         String
-  subject           String
-  status            String // queued | sent | delivered | bounced | failed
-  providerMessageId String?
-  error             String?
+  id                String   @id @default(cuid()) @db.NVarChar(30)
+  type              String   @db.NVarChar(40) // proof_of_membership
+  toAddress         String   @db.NVarChar(256)
+  subject           String   @db.NVarChar(200)
+  status            String   @default("queued") @db.NVarChar(20) // queued | sent | delivered | bounced | failed
+  providerMessageId String?  @db.NVarChar(120)
+  error             String?  @db.NVarChar(400)
   createdAt         DateTime @default(now())
 
-  member   Member? @relation(fields: [memberId], references: [id])
-  memberId String?
+  member   Member? @relation(fields: [memberId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  memberId String? @db.NVarChar(30)
 
   @@index([status])
+  @@map("EmailLogs")
 }
 
-// ── Content management ───────────────────────────────────────────────────
-
-model ContentBlock {
-  id            String   @id @default(cuid())
-  pageSlug      String // home | how-it-works | about | contact
-  key           String // hero | steps | cta ...
-  data          Json // { heading, body, imageRef, ctaLabel, ... }
-  isPlaceholder Boolean  @default(true)
-  published     Boolean  @default(false)
-  updatedBy     String?
-  updatedAt     DateTime @updatedAt
-  createdAt     DateTime @default(now())
-
-  @@unique([pageSlug, key])
-}
-
-model LegalDocument {
-  id            String   @id @default(cuid())
-  slug          String // terms | fair-usage | privacy
-  version       String // e.g. "2026-09-01"
-  title         String
-  bodyMarkdown  String
-  effectiveAt   DateTime
-  published     Boolean  @default(false)
-  isPlaceholder Boolean  @default(true)
-  createdAt     DateTime @default(now())
-
-  @@unique([slug, version])
-  @@index([slug, published])
-}
-
-model FaqItem {
-  id            String   @id @default(cuid())
-  question      String
-  answer        String
-  sortOrder     Int      @default(0)
-  published     Boolean  @default(false)
-  isPlaceholder Boolean  @default(true)
-  updatedAt     DateTime @updatedAt
-}
-
-model EmailTemplate {
-  id            String   @id @default(cuid())
-  key           String   @unique // proof_of_membership | ...
-  subject       String
-  bodyHtml      String
-  bodyText      String
-  variables     Json // documented tokens: {{fullName}} {{membershipId}} {{expiry}} ...
-  isPlaceholder Boolean  @default(true)
-  updatedAt     DateTime @updatedAt
-}
-
-model MediaAsset {
-  id            String   @id @default(cuid())
-  label         String
-  url           String
-  kind          String // image | document
-  isPlaceholder Boolean  @default(true)
-  createdAt     DateTime @default(now())
-}
-
-// ── Settings (typed key/value) ──────────────────────────────────────────
-
-model Setting {
-  key       String   @id // "membership.priceMinor", "gateway.mode", ...
-  group     String // membership | branding | gateway | email | general
-  valueJson Json
-  updatedBy String?
-  updatedAt DateTime @updatedAt
-}
-
-// ── Audit trail ─────────────────────────────────────────────────────────
-
+/// Every mutating admin action.
 model AuditLog {
-  id         String   @id @default(cuid())
-  action     String // member.created | setting.updated | user.invited ...
-  entity     String
-  entityId   String
-  diff       Json?
-  ip         String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid()) @db.NVarChar(30)
+  action    String   @db.NVarChar(60)
+  entity    String   @db.NVarChar(40)
+  entityId  String   @db.NVarChar(60)
+  detail    String?  @db.NVarChar(Max)
+  createdAt DateTime @default(now())
 
-  actor   AdminUser? @relation(fields: [actorId], references: [id])
-  actorId String?
+  actor   AdminUser? @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  actorId String?    @db.NVarChar(30)
 
   @@index([entity, entityId])
   @@index([createdAt])
+  @@map("AuditLogs")
 }

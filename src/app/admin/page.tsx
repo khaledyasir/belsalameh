@@ -8,14 +8,14 @@ import { StatTile } from "@/components/dashboard/stat-tile";
 import { MembersTrend } from "@/components/dashboard/members-trend";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { MemberStatusBadge, TransactionStatusBadge } from "@/components/ui/status-badge";
-import { getDashboardData, type Member, type Transaction } from "@/lib/mock-data";
+import { getDashboardData, type Member, type Transaction } from "@/lib/queries";
 import { formatMoney, formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   await guard();
-  const d = getDashboardData();
+  const d = await getDashboardData();
 
   const memberCols: Column<Member>[] = [
     { key: "name", header: "Member", cell: (m) => m.fullName },
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader
         title="Dashboard"
-        description="Overview of membership activity. All figures are sample data until the database and payment gateway are connected (Phase 3)."
+        description="Live from the database. Revenue uses the placeholder membership price until it is confirmed; payment confirmation is currently manual (MEPS webhook lands in Phase 3)."
         actions={
           <>
             <Link href="/admin/members/verify" className={buttonClasses("secondary")}>
@@ -51,8 +51,8 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
         <StatTile label="Active memberships" value={String(d.kpis.activeMembers)} sample={false} />
         <StatTile label="Expiring · 60 days" value={String(d.kpis.expiringSoon)} tone="accent" sample={false} />
-        <StatTile label="Revenue · 30 days" value={formatMoney(d.kpis.revenue30dMinor, "JOD")} sub="Placeholder price × volume" tone="accent" />
-        <StatTile label="Success rate" value={`${d.kpis.paymentSuccessRate}%`} sub="Captured ÷ all attempts" />
+        <StatTile label="Revenue · 30 days" value={formatMoney(d.kpis.revenue30dMinor, "JOD")} sub="Placeholder price × volume" tone="accent" sample={false} />
+        <StatTile label="Success rate" value={`${d.kpis.paymentSuccessRate}%`} sub="Captured ÷ all attempts" sample={false} />
         <StatTile label="Failed / pending" value={String(d.kpis.failedPending)} sample={false} />
       </div>
 

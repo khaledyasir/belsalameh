@@ -23,18 +23,18 @@ export async function signOutAction() {
 }
 
 export async function updateProfileAction(formData: FormData) {
-  await requireSession();
+  const session = await requireSession();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   if (!name || !email || !email.includes("@")) {
     redirect("/admin/account?profile=err");
   }
-  await updateProfile({ name, email });
+  await updateProfile(session.user.id, { name, email });
   redirect("/admin/account?profile=ok");
 }
 
 export async function changePasswordAction(formData: FormData) {
-  await requireSession();
+  const session = await requireSession();
   const current = String(formData.get("current") ?? "");
   const next = String(formData.get("next") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
@@ -42,6 +42,6 @@ export async function changePasswordAction(formData: FormData) {
   if (next.length < 8) redirect("/admin/account?password=weak");
   if (next !== confirm) redirect("/admin/account?password=mismatch");
 
-  const ok = await changePassword(current, next);
+  const ok = await changePassword(session.user.id, current, next);
   redirect(ok ? "/admin/account?password=ok" : "/admin/account?password=badcurrent");
 }

@@ -5,8 +5,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { DataTable, Pagination, type Column } from "@/components/ui/data-table";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { TransactionStatusBadge } from "@/components/ui/status-badge";
-import { PlaceholderNote } from "@/components/ui/placeholder-badge";
-import { listTransactions, type Transaction, type TransactionStatus } from "@/lib/mock-data";
+import { listTransactions, type Transaction, type TransactionStatus } from "@/lib/queries";
 import { formatMoney, formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Transactions" };
@@ -30,7 +29,7 @@ export default async function TransactionsPage({
   const q = sp.q ?? "";
   const status = (sp.status || "ALL") as TransactionStatus | "ALL";
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const { rows, total, pageSize } = listTransactions({ q, status, page });
+  const { rows, total, pageSize } = await listTransactions({ q, status, page });
 
   const columns: Column<Transaction>[] = [
     { key: "ref", header: "Reference", cell: (t) => <span className="font-mono text-xs">{t.reference}</span> },
@@ -50,16 +49,9 @@ export default async function TransactionsPage({
     <div>
       <PageHeader
         title="Transactions"
-        description="Payment attempts through MEPS. In Phase 3 these rows are created at checkout and finalised by the webhook / IPN handler."
+        description="Created PENDING at checkout and moved to CAPTURED on payment confirmation. Amounts use the placeholder membership price / currency until confirmed; MEPS webhook confirmation lands in Phase 3."
         crumbs={[{ label: "Admin", href: "/admin" }, { label: "Transactions" }]}
       />
-
-      <div className="mb-3">
-        <PlaceholderNote>
-          Sample transactions. Amounts use a placeholder price (see Settings ›
-          Membership product). Currency shown as JOD pending confirmation.
-        </PlaceholderNote>
-      </div>
 
       <TableToolbar
         action="/admin/transactions"

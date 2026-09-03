@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody } from "@/components/ui/card";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { MemberStatusBadge } from "@/components/ui/status-badge";
-import { getMember, getTransaction, listEmailLogs } from "@/lib/mock-data";
+import { getMember, getTransaction, listEmailLogs } from "@/lib/queries";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { EmailStatusBadge } from "@/components/ui/status-badge";
 
@@ -16,11 +16,11 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
   await guard();
 
   const { id } = await params;
-  const member = getMember(id);
+  const member = await getMember(id);
   if (!member) notFound();
 
-  const txn = member.transactionId ? getTransaction(member.transactionId) : null;
-  const emails = listEmailLogs().filter((e) => e.memberId === member.id);
+  const txn = member.transactionId ? await getTransaction(member.transactionId) : null;
+  const emails = (await listEmailLogs()).filter((e) => e.memberId === member.id);
 
   return (
     <div>

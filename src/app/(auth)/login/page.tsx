@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { signInAction } from "../actions";
+import { dbConfigured } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Sign in · Balsalameh Admin" };
 
@@ -24,6 +25,13 @@ export default async function LoginPage({
 
         <div className="rounded-xl border border-white/10 bg-surface p-6 shadow-pop">
           <h1 className="font-display text-xl font-bold text-ink">Sign in</h1>
+
+          {!dbConfigured() && (
+            <p className="mt-3 rounded border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-[#7a4d0f]">
+              Database not configured. Set <code>DATABASE_URL</code> in <code>.env</code>,
+              then run <code>npm run db:push</code> and <code>npm run db:seed</code>.
+            </p>
+          )}
 
           {error && (
             <p role="alert" className="mt-3 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
@@ -46,8 +54,8 @@ export default async function LoginPage({
         </div>
 
         <p className="mt-4 text-center text-xs text-brand-cream/50">
-          Phase 1 authentication. Phase 3 replaces this with Auth.js, hashed
-          credentials in the database, and two-factor authentication.
+          Credentials are stored (scrypt-hashed) in the AdminUsers table. Phase 3
+          adds Auth.js and two-factor authentication.
         </p>
       </div>
     </main>

@@ -6,7 +6,7 @@ import { DataTable, Pagination, type Column } from "@/components/ui/data-table";
 import { TableToolbar } from "@/components/ui/table-toolbar";
 import { MemberStatusBadge } from "@/components/ui/status-badge";
 import { buttonClasses } from "@/components/ui/button";
-import { listMembers, type Member, type MemberStatus } from "@/lib/mock-data";
+import { listMembers, type Member, type MemberStatus } from "@/lib/queries";
 import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Members" };
@@ -30,7 +30,7 @@ export default async function MembersPage({
   const q = sp.q ?? "";
   const status = (sp.status || "ALL") as MemberStatus | "ALL";
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const { rows, total, pageSize } = listMembers({ q, status, page });
+  const { rows, total, pageSize } = await listMembers({ q, status, page });
 
   const columns: Column<Member>[] = [
     { key: "name", header: "Full name", cell: (m) => m.fullName },

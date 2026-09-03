@@ -1,51 +1,46 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getAdmin, verifyCredentials } from "./admin-store";
+import { getAdminById, getAdminByUsername, recordLogin, verifyPassword } from "./admin-store";
 
 /**
- * ⚠️ PHASE 1 AUTH — single admin account, username + password.
+ * Admin session — a stateless signed cookie: `<adminId>.<hmac>` where the hmac
+ * is HMAC-SHA256(adminId, AUTH_SECRET). Credentials live in the AdminUsers
+ * table (see admin-store.ts).
  *
- * The session is a stateless signed cookie: `<username>.<hmac>` where the hmac
- * is HMAC-SHA256(username, AUTH_SECRET). Credentials live in the file-based
- * admin store (src/lib/admin-store.ts).
- *
- * Phase 3 replacement: Auth.js (Credentials provider), Argon2id hashing, a
- * hashed row in the database, mandatory TOTP 2FA, and step-up re-auth for
- * sensitive actions. `getSession()` / `signIn()` / `signOut()` keep their shape.
+ * Phase 3 can swap this for Auth.js + TOTP 2FA; `getSession` / `signIn` /
+ * `signOut` keep their shape.
  */
 
 const COOKIE = "bsl_admin_session";
 const secret = () => process.env.AUTH_SECRET || "dev-only-secret";
 
 export type Session = {
-  user: { username: string; name: string; email: string };
+  user: { id: string; username: string; name: string; email: string };
 };
 
-function sign(username: string): string {
-  return createHmac("sha256", secret()).update(username).digest("hex");
+function sign(value: string): string {
+  return createHmac("sha256", secret()).update(value).digest("hex");
 }
 
 function verifyToken(token: string | undefined): string | null {
   if (!token) return null;
   const idx = token.lastIndexOf(".");
   if (idx <= 0) return null;
-  const username = token.slice(0, idx);
-  const mac = token.slice(idx + 1);
-  const expected = sign(username);
-  const a = Buffer.from(mac, "hex");
-  const b = Buffer.from(expected, "hex");
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
-  return username;
+  const id = token.slice(0, idx);
+  const mac = Buffer.from(token.slice(idx + 1), "hex");
+  const expected = Buffer.from(sign(id), "hex");
+  if (mac.length !== expected.length || !timingSafeEqual(mac, expected)) return null;
+  return id;
 }
 
 export async function getSession(): Promise<Session | null> {
   const store = await cookies();
-  const username = verifyToken(store.get(COOKIE)?.value);
-  if (!username) return null;
-  const admin = await getAdmin();
-  if (admin.username.toLowerCase() !== username.toLowerCase()) return null;
-  return { user: { username: admin.username, name: admin.name, email: admin.email } };
+  const id = verifyToken(store.get(COOKIE)?.value);
+  if (!id) return null;
+  const admin = await getAdminById(id);
+  if (!admin) return null;
+  return { user: { id: admin.id, username: admin.username, name: admin.name, email: admin.email } };
 }
 
 export async function requireSession(): Promise<Session> {
@@ -56,16 +51,18 @@ export async function requireSession(): Promise<Session> {
 
 /** Returns true on success. */
 export async function signIn(username: string, password: string): Promise<boolean> {
-  if (!(await verifyCredentials(username, password))) return false;
-  const admin = await getAdmin();
+  const admin = await getAdminByUsername(username);
+  if (!admin || !verifyPassword(admin, password)) return false;
+
   const store = await cookies();
-  store.set(COOKIE, `${admin.username}.${sign(admin.username)}`, {
+  store.set(COOKIE, `${admin.id}.${sign(admin.id)}`, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 45),
   });
+  await recordLogin(admin.id).catch(() => {});
   return true;
 }
 

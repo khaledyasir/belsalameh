@@ -1,6 +1,8 @@
 # Balsalameh Platform — Roadmap
 
-Living document. Phase 1 (admin console) is built; everything below it is planned.
+Living document. Phases 1–3 (admin console, public site, SQL Server database +
+payment lifecycle) are built. Phase 3b (real MEPS + email) and Phases 4–5
+(company content, visual polish) remain.
 
 ---
 
@@ -51,9 +53,8 @@ Trimmed at the project's request to three sections, reading from placeholder dat
   **Webhook / IPN log** with signature + idempotency status.
 - **My profile** — admin name, email, and change password (confirms the current
   password before applying).
-- **Auth** — one admin account, username + password. Session is a signed cookie;
-  credentials in `.data/admin.json` ([admin-store.ts](../src/lib/admin-store.ts)).
-  Phase 3 swaps in Auth.js + Argon2id + a DB row + TOTP 2FA.
+- **Auth** — one admin account, username + password; credentials in the
+  `AdminUsers` table (see Phase 3). Phase 3b swaps in Auth.js + TOTP 2FA.
 
 > Removed from the earlier draft: content management, versioned legal documents,
 > FAQ, email templates, membership-product config, multi-user roles / permission
@@ -85,26 +86,44 @@ Route group `src/app/(site)`:
 Remaining for Phase 5: visual polish, real imagery, richer FAQ accordion, SEO
 (sitemap, OpenGraph), and the marketing QR code deep-link.
 
-### Phase 3 — Payment integration & Proof of Membership
-1. Checkout submit → server validates (emails match, both checkboxes, record the
-   agreed legal-document versions) → create `Transaction(PENDING)` → sign the
-   MEPS request per the manual → redirect to the **hosted payment page** (keeps us
-   at PCI **SAQ-A**).
-2. Return URL shows a "processing" page and polls our status endpoint.
-3. **IPN / webhook** is the source of truth: verify signature/hash, check amount +
-   currency + order reference, **dedupe** by provider reference, mark
-   `CAPTURED`.
-4. On first capture: create `Member` (generate Membership ID, compute
-   `Month YYYY` expiry from the configured duration), enqueue the Proof of
-   Membership email, write an audit entry.
-5. Email via the chosen provider; log to `EmailLog`; retry on failure; admin can
-   resend.
-6. Reconciliation job polls the gateway for stuck `PENDING` transactions.
-7. Swap the auth stub for **Auth.js** (email + password with Argon2id, mandatory
-   TOTP 2FA, signed session cookie, idle + absolute lifetime, step-up re-auth for
-   settings / gateway / refunds / role changes).
-8. Swap `src/lib/mock-data.ts` call sites for Prisma queries.
-9. TEST → LIVE cutover checklist (see `Settings › Payment gateway`).
+### Phase 3 — Database + payment lifecycle ✅ (built)
+
+- **Microsoft SQL Server** via Prisma (`provider = "sqlserver"`).
+  `prisma/schema.prisma` + `db/mssql-schema.sql` (SSMS-runnable DDL). Tables:
+  `AdminUsers`, `Members`, `Transactions`, `WebhookEvents`, `EmailLogs`,
+  `AuditLogs`. SQL Server has no enum type, so "enum" columns are `NVARCHAR`
+  + `CHECK`. Apply with `npm run db:push`; seed the admin with `npm run db:seed`.
+- **Auth** moved to the DB: `AdminUsers` row, scrypt(salt, password) in
+  `passwordHash` / `passwordSalt`; session cookie is `adminId` + HMAC. Login,
+  profile edit and change-password all hit SQL Server.
+- **Admin reads are live** — `src/lib/queries.ts` replaced the mock module
+  (deleted). Dashboard KPIs, members, verification, transactions, webhook log
+  all query the database.
+- **Payment lifecycle** — `src/lib/payments.ts`:
+  - `createPendingTransaction()` — checkout writes a `PENDING` row with the
+    consent flags + `consentVersion`.
+  - `capturePayment(reference)` — **idempotent**: marks `CAPTURED`, creates the
+    `Member` (Membership ID + `Month YYYY` expiry), queues an `EmailLog` row,
+    writes an `AuditLog` row. Re-running returns the existing membership.
+  - `POST /api/webhooks/meps` is wired to this (dedupe via `WebhookEvents`), and
+    returns `501` until `MEPS_MODE` is set.
+  - While `PAYMENTS_LIVE` is false, `/checkout/processing` shows a **"Record
+    successful payment"** button calling the same `capturePayment()`.
+
+Verified end-to-end against a local SQL Server: checkout → PENDING row →
+confirm → Member + EmailLog + AuditLog, idempotent on repeat, visible in admin.
+
+### Phase 3b — Real MEPS + email (needs external inputs)
+1. Replace the `/checkout/processing` hand-off with a **signed request to the
+   MEPS hosted payment page** (keeps us at PCI **SAQ-A**), per the MEPS manual.
+2. Implement `verifyMepsSignature()` in `src/app/api/webhooks/meps/route.ts`;
+   check amount + currency + order reference before `capturePayment()`.
+3. Send the Proof of Membership email via the chosen provider; update the
+   `EmailLog` row status; retry on failure; "resend" action in the admin.
+4. Reconciliation job for stuck `PENDING` transactions.
+5. Swap the session cookie for **Auth.js** + TOTP 2FA (the `getSession()` surface
+   is unchanged, so pages don't move).
+6. Refunds in the admin (if in business scope).
 
 ### Phase 4 — Content replacement
 Real copy into the CMS; finalize & publish legal documents; set price / currency /
@@ -155,9 +174,9 @@ constrained-network load testing, cross-browser + accessibility QA, launch.
 | Decision | Choice |
 |---|---|
 | Framework + hosting | Next.js 15 App Router; hosting region TBD (see Q3) |
-| Database + ORM | PostgreSQL + Prisma |
-| Auth | Phase 1: single admin, username + password. Phase 3: Auth.js + Argon2id + TOTP 2FA (roles only if multi-user is reintroduced) |
+| Database + ORM | **Microsoft SQL Server + Prisma** (`sqlserver` provider) |
+| Auth | Single admin, username + password, scrypt hash in `AdminUsers`. Phase 3b: Auth.js + TOTP 2FA (roles only if multi-user is reintroduced) |
 | UI | Tailwind + hand-built primitives (Radix/shadcn optional later) |
-| Content model | DB-backed mini-CMS with versioned legal documents |
+| Content | Placeholder strings in `src/lib/site-content.ts`; a DB-backed mini-CMS only if the company needs to self-edit copy |
 | Repo shape | Single Next.js app; extract packages only if a separate staff app is needed |
 | Membership ID | `BSL-XXXX-XXXX`, Crockford-style alphabet, server-generated at capture — pending business confirmation |
