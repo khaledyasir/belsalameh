@@ -8,7 +8,7 @@ export function PreviewRibbon() {
   if (siteEnabled) return null;
   return (
     <div className="bg-brand-indigo px-4 py-1.5 text-center text-xs font-medium text-brand-cream">
-      Preview — placeholder content and pricing, pending final copy from the company
+      Preview: placeholder content and pricing, pending final copy from the company
     </div>
   );
 }

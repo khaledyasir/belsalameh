@@ -164,7 +164,7 @@ function JoinDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
           </span>
         </div>
         <p className="mt-1 text-xs text-ink-subtle">
-          Placeholder amount — final price to be confirmed before launch.
+          Placeholder amount. Final price to be confirmed before launch.
         </p>
 
         <div className="mt-5">

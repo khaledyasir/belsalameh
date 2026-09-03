@@ -25,7 +25,7 @@ export default async function SuccessPage({
         <h1 className="mt-4 font-display text-2xl font-bold text-brand-indigo">Payment received</h1>
         <p className="mt-2 text-sm text-ink-muted">
           Your Proof of Membership has been recorded and will be emailed to you.
-          Please keep it — validation at the airport is done by visually matching
+          Please keep it. Validation at the airport is done by visually matching
           your name and Membership ID.
         </p>
       </div>

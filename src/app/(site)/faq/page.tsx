@@ -10,7 +10,7 @@ export default function FaqPage() {
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
       <h1 className="font-display text-3xl font-bold text-brand-indigo">{SITE.faq.heading}</h1>
       <p className="mt-2 text-sm text-ink-subtle">
-        Placeholder questions and answers — final wording to be provided by the company.
+        Placeholder questions and answers. Final wording to be provided by the company.
       </p>
 
       <dl className="mt-8 divide-y divide-brand-sand/70">

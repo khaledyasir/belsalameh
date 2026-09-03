@@ -38,8 +38,8 @@ export default async function ProcessingPage({
           <p className="font-medium">Payment gateway not connected yet (Phase 3)</p>
           <p className="mt-1">
             Use the button below to record a successful payment. It writes the
-            transaction and creates the membership in the database — the same thing
-            the MEPS webhook will do.
+            transaction and creates the membership in the database. It is the same
+            thing the MEPS webhook will do.
           </p>
           <form action={confirmSimulatedPayment} className="mt-3">
             <input type="hidden" name="ref" value={ref} />
