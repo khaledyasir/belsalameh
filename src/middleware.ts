@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * this for Auth.js `withAuth` middleware validating a signed session + role
  * claims, and enforcing the idle/absolute session lifetime.
  */
-const COOKIE = "bsl_admin_demo_role";
+const COOKIE = "bsl_admin_session";
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

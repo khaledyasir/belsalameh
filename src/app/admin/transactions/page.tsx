@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { DataTable, Pagination, type Column } from "@/components/ui/data-table";
@@ -25,8 +24,7 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
-  const { allowed } = await guard("transactions:view");
-  if (!allowed) return <PermissionDenied area="transactions" />;
+  await guard();
 
   const sp = await searchParams;
   const q = sp.q ?? "";

@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Hide the on-screen dev indicator badge.
+  devIndicators: false,
   // Phase 0 scaffold: keep builds unblocked by lint. Re-enable (remove this)
   // once the lint pass is part of CI.
   eslint: { ignoreDuringBuilds: true },

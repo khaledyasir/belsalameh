@@ -1,23 +1,47 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { signIn, signOut } from "@/lib/auth";
-import { ROLES, type Role } from "@/lib/rbac";
+import { signIn, signOut, requireSession } from "@/lib/auth";
+import { changePassword, updateProfile } from "@/lib/admin-store";
 
-/**
- * PHASE 0 STUB actions. Phase 3 replaces the body with Auth.js
- * `signIn("credentials", …)` + TOTP verification; the signatures stay.
- */
 export async function signInAction(formData: FormData) {
-  const role = String(formData.get("role") ?? "");
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/admin");
-  if (!(ROLES as readonly string[]).includes(role)) {
-    redirect(`/login?error=invalid-role`);
+
+  const ok = await signIn(username, password);
+  if (!ok) {
+    const params = new URLSearchParams({ error: "1" });
+    if (next && next !== "/admin") params.set("next", next);
+    redirect(`/login?${params}`);
   }
-  await signIn(role as Role);
   redirect(next.startsWith("/admin") ? next : "/admin");
 }
 
 export async function signOutAction() {
   await signOut();
+}
+
+export async function updateProfileAction(formData: FormData) {
+  await requireSession();
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  if (!name || !email || !email.includes("@")) {
+    redirect("/admin/account?profile=err");
+  }
+  await updateProfile({ name, email });
+  redirect("/admin/account?profile=ok");
+}
+
+export async function changePasswordAction(formData: FormData) {
+  await requireSession();
+  const current = String(formData.get("current") ?? "");
+  const next = String(formData.get("next") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (next.length < 8) redirect("/admin/account?password=weak");
+  if (next !== confirm) redirect("/admin/account?password=mismatch");
+
+  const ok = await changePassword(current, next);
+  redirect(ok ? "/admin/account?password=ok" : "/admin/account?password=badcurrent");
 }

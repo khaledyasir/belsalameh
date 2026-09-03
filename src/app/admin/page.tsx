@@ -1,26 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { TrendBars } from "@/components/dashboard/trend-chart";
+import { MembersTrend } from "@/components/dashboard/members-trend";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { MemberStatusBadge, TransactionStatusBadge } from "@/components/ui/status-badge";
 import { getDashboardData, type Member, type Transaction } from "@/lib/mock-data";
-import { formatMoney, formatDate, relativeTime } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
-  const { allowed } = await guard("dashboard:view");
-  if (!allowed) return <PermissionDenied area="the dashboard" />;
-
+  await guard();
   const d = getDashboardData();
-  const spark = d.signupsByDay.map((x) => x.count);
 
   const memberCols: Column<Member>[] = [
     { key: "name", header: "Member", cell: (m) => m.fullName },
@@ -39,7 +34,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader
         title="Dashboard"
-        description="Overview of membership activity. All figures below are sample data until the database and payment gateway are connected (Phase 3)."
+        description="Overview of membership activity. All figures are sample data until the database and payment gateway are connected (Phase 3)."
         actions={
           <>
             <Link href="/admin/members/verify" className={buttonClasses("secondary")}>
@@ -53,49 +48,23 @@ export default async function DashboardPage() {
       />
 
       {/* KPI row */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="New · today" value={String(d.kpis.newMembersToday)} sub="vs. 7-day average" spark={spark.slice(-10)} />
-        <StatTile label="New · 30 days" value={String(d.kpis.newMembers30d)} spark={spark} />
-        <StatTile label="Revenue · 30 days" value={formatMoney(d.kpis.revenue30dMinor, "JOD")} sub="Placeholder price × volume" tone="accent" />
-        <StatTile label="Success rate" value={`${d.kpis.paymentSuccessRate}%`} sub="Captured ÷ all attempts" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
         <StatTile label="Active memberships" value={String(d.kpis.activeMembers)} sample={false} />
         <StatTile label="Expiring · 60 days" value={String(d.kpis.expiringSoon)} tone="accent" sample={false} />
-        <StatTile label="New · 7 days" value={String(d.kpis.newMembers7d)} spark={spark.slice(-7)} />
-        <StatTile label="Failed / pending" value={String(d.recentTransactions.filter((t) => t.status !== "CAPTURED").length)} sample={false} />
+        <StatTile label="Revenue · 30 days" value={formatMoney(d.kpis.revenue30dMinor, "JOD")} sub="Placeholder price × volume" tone="accent" />
+        <StatTile label="Success rate" value={`${d.kpis.paymentSuccessRate}%`} sub="Captured ÷ all attempts" />
+        <StatTile label="Failed / pending" value={String(d.kpis.failedPending)} sample={false} />
       </div>
 
-      {/* Charts */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign-ups — last 30 days</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <TrendBars
-              data={d.signupsByDay.map((x) => ({
-                date: x.date,
-                value: x.count,
-                label: `${x.count} sign-up${x.count === 1 ? "" : "s"}`,
-              }))}
-            />
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue — last 30 days</CardTitle>
-          </CardHeader>
-          <CardBody>
-            <TrendBars
-              data={d.revenueByDay.map((x) => ({
-                date: x.date,
-                value: x.amountMinor,
-                label: formatMoney(x.amountMinor, "JOD"),
-              }))}
-              hue="#6D5FA3"
-            />
-          </CardBody>
-        </Card>
-      </div>
+      {/* New members trend with selectable range */}
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>New members</CardTitle>
+        </CardHeader>
+        <CardBody>
+          <MembersTrend series={d.newMembersSeries} />
+        </CardBody>
+      </Card>
 
       {/* Recent tables */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -131,34 +100,6 @@ export default async function DashboardPage() {
             />
           </CardBody>
         </Card>
-      </div>
-
-      {/* System health */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>System health</CardTitle>
-        </CardHeader>
-        <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Health label="Gateway mode" value={d.health.gatewayMode} tone={d.health.gatewayMode === "LIVE" ? "danger" : "warning"} />
-          <Health label="Last webhook" value={d.health.lastWebhookAt ? relativeTime(d.health.lastWebhookAt) : "—"} tone="info" />
-          <Health label="Last proof email" value={d.health.lastEmailAt ? relativeTime(d.health.lastEmailAt) : "—"} tone="info" />
-          <Health
-            label="Email provider"
-            value={d.health.emailProviderConfigured ? "Configured" : "Not configured"}
-            tone={d.health.emailProviderConfigured ? "success" : "warning"}
-          />
-        </CardBody>
-      </Card>
-    </div>
-  );
-}
-
-function Health({ label, value, tone }: { label: string; value: string; tone: "success" | "warning" | "danger" | "info" }) {
-  return (
-    <div className="rounded border border-border p-3">
-      <p className="text-xs text-ink-subtle">{label}</p>
-      <div className="mt-1.5">
-        <Badge tone={tone}>{value}</Badge>
       </div>
     </div>
   );

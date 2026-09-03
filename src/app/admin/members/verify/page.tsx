@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,7 @@ import { findMemberForVerification } from "@/lib/mock-data";
 export const metadata: Metadata = { title: "Verify member" };
 
 export default async function VerifyPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { allowed } = await guard("members:verify");
-  if (!allowed) return <PermissionDenied area="member verification" />;
+  await guard();
 
   const { q = "" } = await searchParams;
   const results = q ? findMemberForVerification(q) : [];

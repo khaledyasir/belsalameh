@@ -1,5 +1,4 @@
 import { getSession } from "@/lib/auth";
-import { can } from "@/lib/rbac";
 import { listMembers } from "@/lib/mock-data";
 
 /**
@@ -9,7 +8,6 @@ import { listMembers } from "@/lib/mock-data";
 export async function GET() {
   const session = await getSession();
   if (!session) return new Response("Unauthorised", { status: 401 });
-  if (!can(session.user.role, "members:export")) return new Response("Forbidden", { status: 403 });
 
   const { rows } = listMembers({ pageSize: 100000 });
   const header = ["Full name", "Email", "Membership ID", "Expiry"];

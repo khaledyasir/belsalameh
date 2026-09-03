@@ -39,24 +39,26 @@ Repo, TypeScript, Tailwind + design tokens, component primitives, Prisma schema,
 auth stub + middleware, build pipeline.
 
 ### Phase 1 — Admin console ✅ (current deliverable)
-Information architecture and every screen, reading from placeholder data:
+Trimmed at the project's request to three sections, reading from placeholder data:
 
-- **Dashboard** — KPI tiles, sign-up & revenue trends, recent members /
-  transactions, system-health panel.
+- **Dashboard** — KPI tiles (active / expiring / revenue / success rate /
+  failed-pending) and a single **New members** chart with a selectable date
+  range (7 / 30 / 90 days); recent members and recent transactions.
 - **Members** — searchable/filterable list, detail (four stored fields separated
   from system-derived data), **Verify member** lookup for airport staff, CSV
   export route.
 - **Transactions** — list, detail with payment timeline and raw-payload view,
   **Webhook / IPN log** with signature + idempotency status.
-- **Content** — pages & blocks, **versioned legal documents** (publish disabled
-  while placeholder), FAQ, email templates.
-- **Membership product** — price, currency, tax, duration, expiry basis, ID
-  format.
-- **Users & roles** — admin accounts, **permission matrix**, activity/audit log.
-- **Settings** — general, branding, payment gateway, email, and a **Launch
-  readiness** checklist that blocks go-live until every placeholder is resolved.
-- **RBAC** — `OWNER / ADMIN / FINANCE / SUPPORT / VIEWER`, enforced server-side
-  in `src/lib/guard.ts` (UI hiding is convenience only).
+- **My profile** — admin name, email, and change password (confirms the current
+  password before applying).
+- **Auth** — one admin account, username + password. Session is a signed cookie;
+  credentials in `.data/admin.json` ([admin-store.ts](../src/lib/admin-store.ts)).
+  Phase 3 swaps in Auth.js + Argon2id + a DB row + TOTP 2FA.
+
+> Removed from the earlier draft: content management, versioned legal documents,
+> FAQ, email templates, membership-product config, multi-user roles / permission
+> matrix / audit log, and the settings + launch-readiness area. The Prisma schema
+> still carries those models for when any of them come back.
 
 ### Phase 2 — Public website
 Pages: Home, How it works, FAQ, Contact, Legal (Terms, Fair Usage, Privacy),
@@ -136,7 +138,7 @@ constrained-network load testing, cross-browser + accessibility QA, launch.
 |---|---|
 | Framework + hosting | Next.js 15 App Router; hosting region TBD (see Q3) |
 | Database + ORM | PostgreSQL + Prisma |
-| Auth | Auth.js + mandatory TOTP 2FA; roles OWNER/ADMIN/FINANCE/SUPPORT/VIEWER |
+| Auth | Phase 1: single admin, username + password. Phase 3: Auth.js + Argon2id + TOTP 2FA (roles only if multi-user is reintroduced) |
 | UI | Tailwind + hand-built primitives (Radix/shadcn optional later) |
 | Content model | DB-backed mini-CMS with versioned legal documents |
 | Repo shape | Single Next.js app; extract packages only if a separate staff app is needed |

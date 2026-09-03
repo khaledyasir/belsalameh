@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody } from "@/components/ui/card";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -14,8 +13,7 @@ import { EmailStatusBadge } from "@/components/ui/status-badge";
 export const metadata: Metadata = { title: "Member" };
 
 export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { allowed, role } = await guard("members:view");
-  if (!allowed) return <PermissionDenied area="members" />;
+  await guard();
 
   const { id } = await params;
   const member = getMember(id);
@@ -23,7 +21,6 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
 
   const txn = member.transactionId ? getTransaction(member.transactionId) : null;
   const emails = listEmailLogs().filter((e) => e.memberId === member.id);
-  const canEdit = role === "ADMIN" || role === "SUPPORT" || role === "OWNER";
 
   return (
     <div>
@@ -35,7 +32,9 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
             <Link href={`/admin/members/verify?q=${encodeURIComponent(member.membershipId)}`} className={buttonClasses("secondary")}>
               Open in verifier
             </Link>
-            {canEdit && <Button variant="secondary" disabled title="Wired in Phase 3">Resend proof email</Button>}
+            <Button variant="secondary" disabled title="Wired in Phase 3">
+              Resend proof email
+            </Button>
           </>
         }
       />

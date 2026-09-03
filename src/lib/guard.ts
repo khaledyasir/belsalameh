@@ -1,18 +1,13 @@
 import { redirect } from "next/navigation";
-import { getSession } from "./auth";
-import { can, type Permission, type Role } from "./rbac";
+import { getSession, type Session } from "./auth";
 
 /**
- * Server-side permission gate for admin pages and actions.
- * UI hiding (RoleGate / nav filtering) is convenience only — this is the
- * boundary. Every page calls it; every server action must call it too.
+ * Auth gate for admin pages, route handlers and server actions.
+ * Phase 1 has a single admin account, so this only enforces authentication.
+ * (Role-based checks were removed at the project's request.)
  */
-export async function guard(permission: Permission): Promise<{ role: Role; name: string; allowed: boolean }> {
+export async function guard(): Promise<Session> {
   const session = await getSession();
   if (!session) redirect("/login");
-  return {
-    role: session.user.role,
-    name: session.user.name,
-    allowed: can(session.user.role, permission),
-  };
+  return session;
 }

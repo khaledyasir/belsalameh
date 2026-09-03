@@ -8,12 +8,11 @@ import { SidebarNav } from "./sidebar";
 import { AccountMenu } from "./account-menu";
 import { Wordmark } from "./wordmark";
 import { Badge } from "@/components/ui/badge";
-import type { Role } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  user: { name: string; email: string; role: Role };
-  /** PLACEHOLDER: sourced from Settings › Payment gateway once wired. */
+  user: { name: string; email: string };
+  /** PLACEHOLDER: sourced from the MEPS gateway config once wired (Phase 3). */
   gatewayMode: "TEST" | "LIVE";
   children: React.ReactNode;
 };
@@ -77,14 +76,14 @@ export function AdminShell({ user, gatewayMode, children }: Props) {
             />
           </form>
 
-          <AccountMenu name={user.name} email={user.email} role={user.role} />
+          <AccountMenu name={user.name} email={user.email} />
         </div>
       </header>
 
       <div className="mx-auto flex w-full max-w-[100rem]">
         {/* Desktop sidebar */}
         <aside className="sticky top-14 hidden h-[calc(100dvh-3.5rem)] w-64 shrink-0 overflow-y-auto bg-brand-indigo lg:block">
-          <SidebarNav role={user.role} />
+          <SidebarNav />
         </aside>
 
         {/* Mobile drawer */}
@@ -111,7 +110,7 @@ export function AdminShell({ user, gatewayMode, children }: Props) {
                   <X className="h-5 w-5" aria-hidden />
                 </button>
               </div>
-              <SidebarNav role={user.role} onNavigate={() => setDrawerOpen(false)} />
+              <SidebarNav onNavigate={() => setDrawerOpen(false)} />
             </div>
           </div>
         )}

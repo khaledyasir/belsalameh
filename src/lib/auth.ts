@@ -1,54 +1,51 @@
+import "server-only";
 import { cookies } from "next/headers";
-import type { Role } from "./rbac";
-import { ROLES } from "./rbac";
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { getAdmin, verifyCredentials } from "./admin-store";
 
 /**
- * ⚠️ PHASE 0 AUTH STUB — NOT A REAL AUTH SYSTEM.
+ * ⚠️ PHASE 1 AUTH — single admin account, username + password.
  *
- * This module exists so the admin console is reviewable and RBAC is
- * demonstrable now. It reads a single unsigned cookie holding a demo role.
+ * The session is a stateless signed cookie: `<username>.<hmac>` where the hmac
+ * is HMAC-SHA256(username, AUTH_SECRET). Credentials live in the file-based
+ * admin store (src/lib/admin-store.ts).
  *
- * Phase 3 replacement plan:
- *  - Swap for Auth.js (NextAuth) with the Credentials provider.
- *  - Argon2id password hashing (AdminUser.passwordHash).
- *  - Mandatory TOTP 2FA (AdminUser.twoFactorSecret / twoFactorEnabled).
- *  - Signed, httpOnly, Secure, SameSite=Lax session cookie.
- *  - Idle + absolute session lifetime (AUTH_SESSION_TTL_MINUTES).
- *  - Step-up re-auth for settings / gateway / refunds / role changes.
- * The `getSession()` / `signIn()` / `signOut()` surface below stays the same,
- * so calling code does not change.
+ * Phase 3 replacement: Auth.js (Credentials provider), Argon2id hashing, a
+ * hashed row in the database, mandatory TOTP 2FA, and step-up re-auth for
+ * sensitive actions. `getSession()` / `signIn()` / `signOut()` keep their shape.
  */
 
-const COOKIE = "bsl_admin_demo_role";
+const COOKIE = "bsl_admin_session";
+const secret = () => process.env.AUTH_SECRET || "dev-only-secret";
 
 export type Session = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: Role;
-    twoFactorEnabled: boolean;
-  };
+  user: { username: string; name: string; email: string };
 };
 
-const DEMO_USERS: Record<Role, Session["user"]> = {
-  OWNER: { id: "u_owner", name: "Dana Owner", email: "owner@balsalameh.example", role: "OWNER", twoFactorEnabled: true },
-  ADMIN: { id: "u_admin", name: "Adam Admin", email: "admin@balsalameh.example", role: "ADMIN", twoFactorEnabled: true },
-  FINANCE: { id: "u_finance", name: "Farah Finance", email: "finance@balsalameh.example", role: "FINANCE", twoFactorEnabled: true },
-  SUPPORT: { id: "u_support", name: "Sami Support", email: "support@balsalameh.example", role: "SUPPORT", twoFactorEnabled: false },
-  VIEWER: { id: "u_viewer", name: "Vera Viewer", email: "viewer@balsalameh.example", role: "VIEWER", twoFactorEnabled: false },
-};
-
-function isRole(v: string | undefined): v is Role {
-  return !!v && (ROLES as readonly string[]).includes(v);
+function sign(username: string): string {
+  return createHmac("sha256", secret()).update(username).digest("hex");
 }
 
-/** Returns the current session, or null when signed out. */
+function verifyToken(token: string | undefined): string | null {
+  if (!token) return null;
+  const idx = token.lastIndexOf(".");
+  if (idx <= 0) return null;
+  const username = token.slice(0, idx);
+  const mac = token.slice(idx + 1);
+  const expected = sign(username);
+  const a = Buffer.from(mac, "hex");
+  const b = Buffer.from(expected, "hex");
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  return username;
+}
+
 export async function getSession(): Promise<Session | null> {
   const store = await cookies();
-  const raw = store.get(COOKIE)?.value;
-  if (!isRole(raw)) return null;
-  return { user: DEMO_USERS[raw] };
+  const username = verifyToken(store.get(COOKIE)?.value);
+  if (!username) return null;
+  const admin = await getAdmin();
+  if (admin.username.toLowerCase() !== username.toLowerCase()) return null;
+  return { user: { username: admin.username, name: admin.name, email: admin.email } };
 }
 
 export async function requireSession(): Promise<Session> {
@@ -57,16 +54,19 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
-/** Stub sign-in: records the chosen demo role. */
-export async function signIn(role: Role): Promise<void> {
+/** Returns true on success. */
+export async function signIn(username: string, password: string): Promise<boolean> {
+  if (!(await verifyCredentials(username, password))) return false;
+  const admin = await getAdmin();
   const store = await cookies();
-  store.set(COOKIE, role, {
+  store.set(COOKIE, `${admin.username}.${sign(admin.username)}`, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 45),
   });
+  return true;
 }
 
 export async function signOut(): Promise<void> {

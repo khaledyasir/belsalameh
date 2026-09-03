@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
@@ -11,8 +10,7 @@ import { formatDateTime } from "@/lib/format";
 export const metadata: Metadata = { title: "Webhook / IPN log" };
 
 export default async function WebhooksPage() {
-  const { allowed } = await guard("webhooks:view");
-  if (!allowed) return <PermissionDenied area="the webhook log" />;
+  await guard();
 
   const rows = listWebhookEvents();
 

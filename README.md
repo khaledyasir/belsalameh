@@ -14,7 +14,7 @@ foundation here is shaped so they plug in without rework.
 | Phase | Scope | State |
 |------|-------|-------|
 | 0 | Foundations: tooling, design tokens, component library, data model, auth skeleton | ✅ done |
-| 1 | **Admin console** — dashboard, members, verification, transactions, content & legal, users & roles, settings, launch-readiness | ✅ this deliverable |
+| 1 | **Admin console** — dashboard, members (+ verification), transactions (+ webhook log), my profile; username/password login | ✅ this deliverable |
 | 2 | Public website design & build (checkout UI only) | ⬜ not started |
 | 3 | MEPS payment integration + Proof of Membership email | ⬜ not started |
 | 4 | Replace placeholder content with company-supplied information | ⬜ not started |
@@ -33,7 +33,7 @@ and decisions still required.
 | Styling | **Tailwind CSS 3** with CSS-variable design tokens | Brand re-skin is a one-file change (`src/app/globals.css`) |
 | UI | Hand-built primitives in `src/components/ui` | No heavy dependency; accessible patterns; swap for Radix/shadcn if the team prefers |
 | Data model | **Prisma + PostgreSQL** (`prisma/schema.prisma`) | Small relational model; transactional member/transaction creation |
-| Auth | **Phase 0 stub** in `src/lib/auth.ts` → Auth.js + TOTP 2FA in Phase 3 | Stub keeps the console reviewable; the `getSession()` surface stays identical |
+| Auth | **Phase 1 stub** — one admin account, username + password ([auth.ts](src/lib/auth.ts) + [admin-store.ts](src/lib/admin-store.ts)) → Auth.js + TOTP 2FA in Phase 3 | Real login now; the `getSession()` surface stays identical for the swap |
 | Charts | Inline SVG, single-hue, hover tooltips | Follows the `dataviz` conventions; light payload |
 
 ### Why the admin runs without a database
@@ -47,15 +47,18 @@ and shapes.
 
 ## Running locally
 
-```bash
+PowerShell (run each line separately — `&&` is not supported):
+
+```powershell
 npm install
-cp .env.example .env
+Copy-Item .env.example .env
 npm run dev            # http://localhost:3000
 ```
 
-Open `/login` and pick a role (Owner / Admin / Finance / Support / Viewer) to
-explore the console with that permission set. There is no password in Phase 1 —
-see the auth note above.
+Open `/login` and sign in with the credentials from `.env`
+(defaults: username `admin`, password `admin1234`). On first run these seed
+`.data/admin.json`; after that, name / email / password are managed from
+**Admin › My profile**. There are no other roles in Phase 1 — a single admin.
 
 ### Useful scripts
 
@@ -79,43 +82,46 @@ prisma/
 src/
   middleware.ts          admin route protection (stub → Auth.js in Phase 3)
   app/
-    (auth)/login         role picker sign-in (stub)
-    admin/               the console — one folder per IA section
-      layout.tsx         shell (sidebar + topbar + env badge)
-      page.tsx           dashboard
+    (auth)/login         username + password sign-in
+    (auth)/actions.ts    sign in/out, update profile, change password
+    admin/
+      layout.tsx         shell (sidebar + topbar + gateway-mode badge)
+      page.tsx           dashboard (KPIs + range-selectable New members chart)
       members/           list · detail · verify · CSV export route
       transactions/      list · detail · webhook (IPN) log
-      content/           pages · legal (versioned) · FAQ · email templates
-      membership/        product config (price, duration, ID format)
-      users/             admin users · roles matrix · activity log
-      settings/          general · branding · payment gateway · email · launch readiness
+      account/           my profile — name, email, change password
   components/
     ui/                  primitives (button, card, table, field, badge, …)
     admin/               shell (sidebar, topbar, account menu, page header)
-    dashboard/           stat tiles, trend chart
+    dashboard/           stat tile, members trend chart
   lib/
-    rbac.ts              roles, permissions, permission matrix
-    nav.ts               admin navigation model
-    auth.ts / guard.ts   session + server-side permission gate
+    nav.ts               admin navigation model (Dashboard, Members, Transactions)
+    auth.ts              session cookie (sign/verify)
+    admin-store.ts       file-based single-admin credential store
+    guard.ts             per-page auth gate
     mock-data.ts         PLACEHOLDER data source (Phase 1)
     format.ts            money / date / expiry ("Month YYYY") formatting
     membership-id.ts     Membership ID generator (BSL-XXXX-XXXX)
 ```
 
+> **Scope note:** the admin was trimmed at the project's request to
+> Dashboard · Members · Transactions only. Content management, membership-product
+> config, multi-user roles, and the settings/launch-readiness area were removed;
+> the Prisma schema still carries those models for when they return.
+
 ---
 
 ## Things that are deliberately placeholder
 
-Everything company-specific is stubbed and flagged. `Settings › Launch readiness`
-lists every item and blocks a "Go live" toggle until all are resolved:
+Nothing company-specific is invented. Still to be supplied:
 
-- All marketing copy and FAQ (`src/lib/mock-data.ts`, later the CMS records)
-- Terms & Conditions, Fair Usage Policy, Privacy Policy — empty stubs, publish disabled
 - Membership price, currency, tax treatment, duration, renewal behaviour
-- Membership ID format (prefix / length / checksum)
+  (placeholder constants in [mock-data.ts](src/lib/mock-data.ts))
+- Membership ID format — prefix / length / checksum ([membership-id.ts](src/lib/membership-id.ts))
 - MEPS credentials and endpoints; email provider and sending domain
 - Company legal name, address, support email
+- Terms & Conditions, Fair Usage Policy, Privacy Policy text
 - Vector logo and licensed font files (Crimson, Abd ElRady)
 
-Do not fill these in with guesses — they come from the company (Phase 4) or from
-the MEPS manual (Phase 3).
+These come from the company (Phase 4) or the MEPS manual (Phase 3) — see
+[docs/ROADMAP.md](docs/ROADMAP.md).

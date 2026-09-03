@@ -7,12 +7,18 @@
  * details, pricing, or legal text.
  *
  * Phase 3 swap: replace these functions with Prisma queries against
- * `prisma/schema.prisma`. Call sites use the same function names / shapes, so
- * pages should not need structural changes.
+ * `prisma/schema.prisma`. Call sites use the same function names / shapes.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import { formatExpiry } from "./format";
+
+/** PLACEHOLDER — real value comes from the MEPS gateway config in Phase 3. */
+export const GATEWAY_MODE: "TEST" | "LIVE" = "TEST";
+
+/** PLACEHOLDER price (minor units) and currency — confirm with the business. */
+export const MEMBERSHIP_PRICE_MINOR = 25_000;
+export const MEMBERSHIP_CURRENCY = "JOD";
 
 // ── deterministic PRNG so mock data is stable between renders ────────────────
 function mulberry32(seed: number) {
@@ -83,30 +89,10 @@ export type EmailLogEntry = {
   createdAt: string;
 };
 
-export type AdminUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: "OWNER" | "ADMIN" | "FINANCE" | "SUPPORT" | "VIEWER";
-  status: "INVITED" | "ACTIVE" | "SUSPENDED";
-  twoFactorEnabled: boolean;
-  lastLoginAt: string | null;
-};
-
-export type AuditEntry = {
-  id: string;
-  actor: string;
-  action: string;
-  entity: string;
-  entityId: string;
-  createdAt: string;
-};
-
 // ── name pools (fictional) ────────────────────────────────────────────────
 const FIRST = ["Omar", "Layla", "Yousef", "Nadia", "Karim", "Salma", "Tariq", "Hana", "Ziad", "Rania", "Bilal", "Maya", "Adam", "Lina", "Sami", "Dima", "Nour", "Faris", "Aya", "Jamal", "Reem", "Hadi", "Sara", "Waleed"];
 const LAST = ["Haddad", "Nasser", "Khoury", "Mansour", "Darwish", "Saleh", "Barakat", "Aziz", "Fares", "Rahman", "Sultan", "Kanaan", "Odeh", "Zahran", "Sabbagh", "Tannous", "Ghanem", "Halabi"];
 
-// ── generate members ──────────────────────────────────────────────────────
 function gen32() {
   const a = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
   let s = "";
@@ -114,13 +100,13 @@ function gen32() {
   return `BSL-${s.slice(0, 4)}-${s.slice(4)}`;
 }
 
+// ── members ──────────────────────────────────────────────────────────────
 const MEMBERS: Member[] = Array.from({ length: 64 }).map((_, i) => {
   const fn = pick(FIRST);
   const ln = pick(LAST);
   const purchased = daysAgo(between(1, 400));
-  const durationMonths = 12;
   const exp = new Date(purchased);
-  exp.setMonth(exp.getMonth() + durationMonths);
+  exp.setMonth(exp.getMonth() + 12);
   const monthsToExpiry = (exp.getTime() - Date.now()) / (86400_000 * 30);
   let status: MemberStatus = "ACTIVE";
   if (monthsToExpiry < 0) status = "EXPIRED";
@@ -130,7 +116,7 @@ const MEMBERS: Member[] = Array.from({ length: 64 }).map((_, i) => {
     id: `mem_${1000 + i}`,
     membershipId: gen32(),
     fullName: `${fn} ${ln}`,
-    email: `${fn}.${ln}`.toLowerCase() + `@example.com`,
+    email: `${fn}.${ln}`.toLowerCase() + "@example.com",
     expiryMonth: exp.getMonth() + 1,
     expiryYear: exp.getFullYear(),
     expiryLabel: formatExpiry(exp.getMonth() + 1, exp.getFullYear()),
@@ -140,7 +126,7 @@ const MEMBERS: Member[] = Array.from({ length: 64 }).map((_, i) => {
   };
 });
 
-// ── generate transactions (superset of members: includes failures/pending) ─
+// ── transactions (superset of members: includes failures / pending) ───────
 const FAIL_REASONS = ["Card declined by issuer", "3-D Secure authentication failed", "Insufficient funds", "Timeout awaiting gateway response"];
 const TRANSACTIONS: Transaction[] = [
   ...MEMBERS.map((m, i) => ({
@@ -148,8 +134,8 @@ const TRANSACTIONS: Transaction[] = [
     reference: `BSL-ORD-${40000 + i}`,
     provider: "MEPS" as const,
     providerRef: `MEPS${between(10_000_000, 99_999_999)}`,
-    amountMinor: 25_000, // PLACEHOLDER price — see Settings › Membership product
-    currency: "JOD",
+    amountMinor: MEMBERSHIP_PRICE_MINOR,
+    currency: MEMBERSHIP_CURRENCY,
     status: "CAPTURED" as TransactionStatus,
     fullName: m.fullName,
     email: m.email,
@@ -168,8 +154,8 @@ const TRANSACTIONS: Transaction[] = [
       reference: `BSL-ORD-${50000 + i}`,
       provider: "MEPS" as const,
       providerRef: failed ? null : `MEPS${between(10_000_000, 99_999_999)}`,
-      amountMinor: 25_000,
-      currency: "JOD",
+      amountMinor: MEMBERSHIP_PRICE_MINOR,
+      currency: MEMBERSHIP_CURRENCY,
       status: (failed ? "FAILED" : "PENDING") as TransactionStatus,
       fullName: `${fn} ${ln}`,
       email: `${fn}.${ln}`.toLowerCase() + "@example.com",
@@ -182,173 +168,62 @@ const TRANSACTIONS: Transaction[] = [
 ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
 // ── webhook + email logs ─────────────────────────────────────────────────
-const WEBHOOKS: WebhookEvent[] = Array.from({ length: 30 }).map((_, i) => {
-  const ok = rnd() < 0.85;
-  const when = daysAgo(between(0, 20));
-  return {
-    id: `wh_${i}`,
-    provider: "MEPS" as const,
-    dedupeKey: `meps:MEPS${between(10_000_000, 99_999_999)}`,
-    signatureValid: rnd() < 0.95,
-    result: (ok ? "ok" : rnd() < 0.5 ? "ignored" : "error") as WebhookEvent["result"],
-    error: ok ? null : "Order reference not found",
-    processedAt: when.toISOString(),
-    createdAt: when.toISOString(),
-  };
-}).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+const WEBHOOKS: WebhookEvent[] = Array.from({ length: 30 })
+  .map((_, i) => {
+    const ok = rnd() < 0.85;
+    const when = daysAgo(between(0, 20));
+    return {
+      id: `wh_${i}`,
+      provider: "MEPS" as const,
+      dedupeKey: `meps:MEPS${between(10_000_000, 99_999_999)}`,
+      signatureValid: rnd() < 0.95,
+      result: (ok ? "ok" : rnd() < 0.5 ? "ignored" : "error") as WebhookEvent["result"],
+      error: ok ? null : "Order reference not found",
+      processedAt: when.toISOString(),
+      createdAt: when.toISOString(),
+    };
+  })
+  .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
-const EMAILS: EmailLogEntry[] = MEMBERS.slice(0, 40).map((m, i) => ({
-  id: `mail_${i}`,
-  type: "proof_of_membership",
-  toAddress: m.email,
-  subject: "Your Balsalameh membership confirmation",
-  status: pick(["delivered", "delivered", "delivered", "sent", "bounced"]) as EmailLogEntry["status"],
-  memberId: m.id,
-  createdAt: m.purchasedAt,
-})).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-
-// ── admin users + audit ─────────────────────────────────────────────────
-const ADMIN_USERS: AdminUser[] = [
-  { id: "u_owner", name: "Dana Owner", email: "owner@balsalameh.example", role: "OWNER", status: "ACTIVE", twoFactorEnabled: true, lastLoginAt: daysAgo(0).toISOString() },
-  { id: "u_admin", name: "Adam Admin", email: "admin@balsalameh.example", role: "ADMIN", status: "ACTIVE", twoFactorEnabled: true, lastLoginAt: daysAgo(1).toISOString() },
-  { id: "u_finance", name: "Farah Finance", email: "finance@balsalameh.example", role: "FINANCE", status: "ACTIVE", twoFactorEnabled: true, lastLoginAt: daysAgo(3).toISOString() },
-  { id: "u_support", name: "Sami Support", email: "support@balsalameh.example", role: "SUPPORT", status: "ACTIVE", twoFactorEnabled: false, lastLoginAt: daysAgo(2).toISOString() },
-  { id: "u_viewer", name: "Vera Viewer", email: "viewer@balsalameh.example", role: "VIEWER", status: "INVITED", twoFactorEnabled: false, lastLoginAt: null },
-];
-
-const AUDIT: AuditEntry[] = Array.from({ length: 24 }).map((_, i) => {
-  const when = daysAgo(between(0, 30));
-  const [action, entity] = pick([
-    ["member.created", "Member"],
-    ["member.revoked", "Member"],
-    ["email.resent", "EmailLog"],
-    ["setting.updated", "Setting"],
-    ["legal.published", "LegalDocument"],
-    ["user.invited", "AdminUser"],
-    ["transaction.refunded", "Transaction"],
-  ]);
-  return {
-    id: `aud_${i}`,
-    actor: pick(ADMIN_USERS).name,
-    action,
-    entity,
-    entityId: `${entity.toLowerCase()}_${between(1000, 9999)}`,
-    createdAt: when.toISOString(),
-  };
-}).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-
-// ── settings (typed key/value) ──────────────────────────────────────────
-type SettingValue = string | number | boolean;
-const SETTINGS: Record<string, { value: SettingValue; group: string; placeholder: boolean; label: string }> = {
-  "general.siteName": { value: "Balsalameh", group: "general", placeholder: false, label: "Site name" },
-  "general.supportEmail": { value: "support@example.com", group: "general", placeholder: true, label: "Support email" },
-  "general.timezone": { value: "Asia/Amman", group: "general", placeholder: false, label: "Timezone" },
-  "general.companyLegalName": { value: "[Registered company name]", group: "general", placeholder: true, label: "Registered company name" },
-  "general.companyAddress": { value: "[Registered address]", group: "general", placeholder: true, label: "Registered address" },
-
-  "membership.priceMinor": { value: 25000, group: "membership", placeholder: true, label: "Membership price (minor units)" },
-  "membership.currency": { value: "JOD", group: "membership", placeholder: true, label: "Currency" },
-  "membership.durationMonths": { value: 12, group: "membership", placeholder: true, label: "Membership duration (months)" },
-  "membership.idPrefix": { value: "BSL", group: "membership", placeholder: true, label: "Membership ID prefix" },
-
-  "branding.logoUrl": { value: "", group: "branding", placeholder: true, label: "Logo file" },
-  "branding.primaryColor": { value: "#2E3A6E", group: "branding", placeholder: false, label: "Primary colour" },
-  "branding.accentColor": { value: "#F7A663", group: "branding", placeholder: false, label: "Accent colour" },
-
-  "gateway.mode": { value: "TEST", group: "gateway", placeholder: false, label: "Gateway environment" },
-  "gateway.merchantId": { value: "", group: "gateway", placeholder: true, label: "MEPS merchant ID" },
-  "gateway.apiBase": { value: "", group: "gateway", placeholder: true, label: "MEPS API base URL" },
-  "gateway.webhookConfigured": { value: false, group: "gateway", placeholder: true, label: "Webhook / IPN configured" },
-
-  "email.provider": { value: "", group: "email", placeholder: true, label: "Email provider" },
-  "email.fromAddress": { value: "membership@example.com", group: "email", placeholder: true, label: "From address" },
-  "email.dkimVerified": { value: false, group: "email", placeholder: true, label: "DKIM verified" },
-};
-
-// ── content ─────────────────────────────────────────────────────────────
-export const CONTENT_PAGES = [
-  { slug: "home", title: "Home", blocks: ["hero", "what-is-membership", "how-it-works", "faq-teaser", "cta"] },
-  { slug: "how-it-works", title: "How it works", blocks: ["intro", "steps"] },
-  { slug: "about", title: "About", blocks: ["intro"] },
-  { slug: "contact", title: "Contact", blocks: ["intro", "form-intro"] },
-].map((p) => ({
-  ...p,
-  blockDetails: p.blocks.map((key) => ({
-    key,
-    heading: `[${p.title} — ${key}] heading`,
-    body: "Neutral placeholder copy. Final English text will be supplied by the company and pasted here.",
-    isPlaceholder: true,
-    published: false,
-  })),
-}));
-
-export const LEGAL_DOCS = [
-  { slug: "terms", title: "Terms & Conditions and Fair Usage Policy", version: "draft-0", effectiveAt: null, published: false, isPlaceholder: true },
-  { slug: "privacy", title: "Privacy Policy", version: "draft-0", effectiveAt: null, published: false, isPlaceholder: true },
-];
-
-export const FAQ_ITEMS = Array.from({ length: 6 }).map((_, i) => ({
-  id: `faq_${i}`,
-  question: `[Placeholder question ${i + 1}] — to be provided by the company`,
-  answer: "Neutral placeholder answer. Replace with company-approved wording.",
-  sortOrder: i,
-  published: false,
-  isPlaceholder: true,
-}));
-
-export const EMAIL_TEMPLATES = [
-  {
-    key: "proof_of_membership",
+const EMAILS: EmailLogEntry[] = MEMBERS.slice(0, 40)
+  .map((m, i) => ({
+    id: `mail_${i}`,
+    type: "proof_of_membership",
+    toAddress: m.email,
     subject: "Your Balsalameh membership confirmation",
-    isPlaceholder: true,
-    variables: ["{{fullName}}", "{{membershipId}}", "{{expiry}}", "{{supportEmail}}", "{{companyLegalName}}"],
-    note: "Spec-locked fields: welcome message, full name as on passport, unique Membership ID, expiry as Month YYYY. No barcode / QR code.",
-  },
-];
+    status: pick(["delivered", "delivered", "delivered", "sent", "bounced"]) as EmailLogEntry["status"],
+    memberId: m.id,
+    createdAt: m.purchasedAt,
+  }))
+  .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
-// ── dashboard series ────────────────────────────────────────────────────
+// ── dashboard ───────────────────────────────────────────────────────────
+export type DayPoint = { date: string; count: number };
+
 export function getDashboardData() {
   const captured = TRANSACTIONS.filter((t) => t.status === "CAPTURED");
-  const last30 = (iso: string) => +new Date(iso) > Date.now() - 30 * 86400_000;
-  const last7 = (iso: string) => +new Date(iso) > Date.now() - 7 * 86400_000;
+  const within = (iso: string, days: number) => +new Date(iso) > Date.now() - days * 86400_000;
 
-  const signupsByDay = Array.from({ length: 30 }).map((_, i) => {
-    const day = daysAgo(29 - i);
-    const count = MEMBERS.filter(
-      (m) => new Date(m.purchasedAt).toDateString() === day.toDateString(),
-    ).length + between(0, 3);
-    return { date: day.toISOString().slice(0, 10), count };
+  // 90 days of daily new-member counts for the range-selectable chart.
+  const newMembersSeries: DayPoint[] = Array.from({ length: 90 }).map((_, i) => {
+    const day = daysAgo(89 - i);
+    const real = MEMBERS.filter((m) => new Date(m.purchasedAt).toDateString() === day.toDateString()).length;
+    return { date: day.toISOString().slice(0, 10), count: real + between(0, 3) };
   });
 
-  const revenueByDay = signupsByDay.map((d) => ({
-    date: d.date,
-    amountMinor: d.count * 25_000,
-  }));
-
   return {
+    newMembersSeries,
     kpis: {
-      newMembersToday: MEMBERS.filter((m) => new Date(m.purchasedAt).toDateString() === new Date().toDateString()).length + between(0, 4),
-      newMembers7d: MEMBERS.filter((m) => last7(m.purchasedAt)).length + between(2, 8),
-      newMembers30d: MEMBERS.filter((m) => last30(m.purchasedAt)).length + between(6, 20),
-      revenue30dMinor: captured.filter((t) => last30(t.createdAt)).length * 25_000 + 400_000,
+      revenue30dMinor: captured.filter((t) => within(t.createdAt, 30)).length * MEMBERSHIP_PRICE_MINOR + 400_000,
       activeMembers: MEMBERS.filter((m) => m.status === "ACTIVE" || m.status === "EXPIRING_SOON").length,
       expiringSoon: MEMBERS.filter((m) => m.status === "EXPIRING_SOON").length,
-      paymentSuccessRate:
-        Math.round((captured.length / TRANSACTIONS.length) * 1000) / 10,
+      paymentSuccessRate: Math.round((captured.length / TRANSACTIONS.length) * 1000) / 10,
+      failedPending: TRANSACTIONS.filter((t) => t.status === "FAILED" || t.status === "PENDING").length,
     },
-    signupsByDay,
-    revenueByDay,
     recentMembers: MEMBERS.slice()
       .sort((a, b) => +new Date(b.purchasedAt) - +new Date(a.purchasedAt))
       .slice(0, 6),
     recentTransactions: TRANSACTIONS.slice(0, 6),
-    health: {
-      gatewayMode: SETTINGS["gateway.mode"].value as string,
-      lastWebhookAt: WEBHOOKS[0]?.createdAt ?? null,
-      lastEmailAt: EMAILS[0]?.createdAt ?? null,
-      emailProviderConfigured: Boolean(SETTINGS["email.provider"].value),
-      webhookConfigured: Boolean(SETTINGS["gateway.webhookConfigured"].value),
-    },
   };
 }
 
@@ -415,69 +290,4 @@ export function listWebhookEvents() {
 
 export function listEmailLogs() {
   return EMAILS.slice();
-}
-
-export function listAdminUsers() {
-  return ADMIN_USERS.slice();
-}
-
-export function listAuditEntries() {
-  return AUDIT.slice();
-}
-
-export function getSetting(key: string): SettingValue | undefined {
-  return SETTINGS[key]?.value;
-}
-
-export function listSettings(group?: string) {
-  return Object.entries(SETTINGS)
-    .filter(([, v]) => !group || v.group === group)
-    .map(([key, v]) => ({ key, ...v }));
-}
-
-/** Everything still holding placeholder content — powers Launch readiness. */
-export function launchReadiness() {
-  const items: { area: string; label: string; ready: boolean; hint: string }[] = [];
-
-  for (const s of listSettings()) {
-    if (s.placeholder) {
-      const unset = s.value === "" || s.value === false || String(s.value).startsWith("[");
-      items.push({
-        area: "Settings",
-        label: s.label,
-        // A placeholder value is never "ready" until the company confirms it,
-        // even when a plausible default is pre-filled.
-        ready: false,
-        hint: unset ? `${s.key} — not set` : `${s.key} — placeholder value, confirm with the company`,
-      });
-    }
-  }
-  for (const d of LEGAL_DOCS) {
-    items.push({
-      area: "Legal",
-      label: d.title,
-      ready: d.published && !d.isPlaceholder,
-      hint: "Awaiting company-supplied text + legal review",
-    });
-  }
-  for (const p of CONTENT_PAGES) {
-    const pending = p.blockDetails.filter((b) => b.isPlaceholder || !b.published).length;
-    items.push({
-      area: "Content",
-      label: `${p.title} page`,
-      ready: pending === 0,
-      hint: `${pending} block(s) still placeholder / unpublished`,
-    });
-  }
-  for (const t of EMAIL_TEMPLATES) {
-    items.push({
-      area: "Email",
-      label: `Template: ${t.key}`,
-      ready: !t.isPlaceholder,
-      hint: "Populate with company-approved copy",
-    });
-  }
-
-  const ready = items.filter((i) => i.ready).length;
-  return { items, ready, total: items.length, canGoLive: ready === items.length };
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { guard } from "@/lib/guard";
-import { PermissionDenied } from "@/components/admin/permission-denied";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardHeader, CardTitle, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,15 +12,14 @@ import { formatMoney, formatDateTime } from "@/lib/format";
 export const metadata: Metadata = { title: "Transaction" };
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { allowed, role } = await guard("transactions:view");
-  if (!allowed) return <PermissionDenied area="transactions" />;
+  await guard();
 
   const { id } = await params;
   const txn = getTransaction(id);
   if (!txn) notFound();
 
   const member = txn.memberId ? getMember(txn.memberId) : null;
-  const canRefund = (role === "FINANCE" || role === "ADMIN" || role === "OWNER") && txn.status === "CAPTURED";
+  const canRefund = txn.status === "CAPTURED";
 
   const timeline = [
     { label: "Transaction created", at: txn.createdAt, done: true },
