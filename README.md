@@ -14,8 +14,8 @@ foundation here is shaped so they plug in without rework.
 | Phase | Scope | State |
 |------|-------|-------|
 | 0 | Foundations: tooling, design tokens, component library, data model, auth skeleton | ✅ done |
-| 1 | **Admin console** — dashboard, members (+ verification), transactions (+ webhook log), my profile; username/password login | ✅ this deliverable |
-| 2 | Public website design & build (checkout UI only) | ⬜ not started |
+| 1 | **Admin console** — dashboard, members (+ verification), transactions (+ webhook log), my profile; username/password login | ✅ done |
+| 2 | **Public site** — landing page + checkout form (passport name + email + two consent checkboxes) + legal/FAQ stubs + payment hand-off placeholder | ✅ built; visual polish in Phase 5 |
 | 3 | MEPS payment integration + Proof of Membership email | ⬜ not started |
 | 4 | Replace placeholder content with company-supplied information | ⬜ not started |
 | 5 | Visual refinement & branding rollout | ⬜ not started |
@@ -82,6 +82,13 @@ prisma/
 src/
   middleware.ts          admin route protection (stub → Auth.js in Phase 3)
   app/
+    (site)/              PUBLIC SITE
+      layout.tsx         header + footer + pre-launch preview ribbon
+      page.tsx           landing page
+      join/              checkout form (the focus) + server action
+      checkout/          processing (payment hand-off) + success placeholders
+      legal/[slug]       Terms / Privacy stubs (linked from the consent checkboxes)
+      faq/               FAQ (placeholder Q&A)
     (auth)/login         username + password sign-in
     (auth)/actions.ts    sign in/out, update profile, change password
     admin/
@@ -92,9 +99,13 @@ src/
       account/           my profile — name, email, change password
   components/
     ui/                  primitives (button, card, table, field, badge, …)
+    site/                header, footer, preview ribbon
     admin/               shell (sidebar, topbar, account menu, page header)
     dashboard/           stat tile, members trend chart
   lib/
+    membership.ts        single product config (price/currency/duration — placeholder)
+    checkout.ts          shared zod schema for the checkout form + server action
+    site-content.ts      all public copy (placeholder) + PUBLIC_SITE_ENABLED flag
     nav.ts               admin navigation model (Dashboard, Members, Transactions)
     auth.ts              session cookie (sign/verify)
     admin-store.ts       file-based single-admin credential store

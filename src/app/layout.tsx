@@ -13,11 +13,10 @@ const display = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: "Balsalameh Admin",
-    template: "%s · Balsalameh Admin",
+    default: "Balsalameh",
+    template: "%s · Balsalameh",
   },
-  description: "Administrative console for the Balsalameh membership platform.",
-  robots: { index: false, follow: false }, // admin app — never indexed
+  description: "Balsalameh Membership.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -12,13 +12,14 @@
  */
 
 import { formatExpiry } from "./format";
+import { MEMBERSHIP } from "./membership";
 
 /** PLACEHOLDER — real value comes from the MEPS gateway config in Phase 3. */
 export const GATEWAY_MODE: "TEST" | "LIVE" = "TEST";
 
-/** PLACEHOLDER price (minor units) and currency — confirm with the business. */
-export const MEMBERSHIP_PRICE_MINOR = 25_000;
-export const MEMBERSHIP_CURRENCY = "JOD";
+/** Re-exported from the shared product config (src/lib/membership.ts). */
+export const MEMBERSHIP_PRICE_MINOR = MEMBERSHIP.priceMinor;
+export const MEMBERSHIP_CURRENCY = MEMBERSHIP.currency;
 
 // ── deterministic PRNG so mock data is stable between renders ────────────────
 function mulberry32(seed: number) {

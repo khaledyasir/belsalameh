@@ -60,12 +60,25 @@ Trimmed at the project's request to three sections, reading from placeholder dat
 > matrix / audit log, and the settings + launch-readiness area. The Prisma schema
 > still carries those models for when any of them come back.
 
-### Phase 2 — Public website
-Pages: Home, How it works, FAQ, Contact, Legal (Terms, Fair Usage, Privacy),
-Checkout, Payment processing, Success, Failure/retry. Content pulled from the
-Phase 1 CMS records. Mobile-first, brand-aligned, WCAG 2.2 AA pass. Checkout
-**UI** built here (the 3 fields + 2 checkboxes + price summary), but no live
-charge yet. SEO + sitemap; the marketing QR code deep-links here.
+### Phase 2 — Public website ✅ (built)
+Route group `src/app/(site)`:
+
+- **Landing page** — hero, "what's included" (placeholder benefits), the three
+  spec "how it works" steps, FAQ teaser, final CTA. CSS-gradient hero, no images,
+  to stay light on airport Wi-Fi.
+- **Checkout form** (`/join`, the focus) — Full Name (as on passport), Email,
+  Confirm Email; **no phone field**; the two mandatory consent checkboxes linking
+  to the legal stubs. Shared zod schema ([lib/checkout.ts](../src/lib/checkout.ts))
+  validates on the client (inline errors + a focus-managed error summary) and
+  again in the server action. On success it hands off to `/checkout/processing`
+  (a placeholder standing in for the MEPS hosted page); `/checkout/success` shows
+  an example Proof of Membership.
+- **Legal stubs** (`/legal/terms`, `/legal/privacy`) and **FAQ** — all copy is
+  placeholder from [lib/site-content.ts](../src/lib/site-content.ts); a preview
+  ribbon and a site-wide noindex stay on until `PUBLIC_SITE_ENABLED=true`.
+
+Remaining for Phase 5: visual polish, real imagery, richer FAQ accordion, SEO
+(sitemap, OpenGraph), and the marketing QR code deep-link.
 
 ### Phase 3 — Payment integration & Proof of Membership
 1. Checkout submit → server validates (emails match, both checkboxes, record the

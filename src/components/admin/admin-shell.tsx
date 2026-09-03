@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Menu, X, Search } from "lucide-react";
 import { SidebarNav } from "./sidebar";
 import { AccountMenu } from "./account-menu";
-import { Wordmark } from "./wordmark";
+import { Wordmark } from "@/components/wordmark";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
