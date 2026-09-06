@@ -38,26 +38,26 @@ export function AnimatedSky({ variant = "gold", className }: Props) {
           ["--bsl-drift" as string]: "-1100px",
         } as CSSProperties)}
       />
-      {/* far planes — slow, small, faint, drifting right */}
+      {/* far planes — small, very faint, drifting right */}
       <div
-        className="absolute inset-0 opacity-[0.13]"
+        className="absolute inset-0 opacity-[0.05]"
         style={layer({
           backgroundImage: `url(${img})`,
-          backgroundSize: "460px auto",
-          backgroundPosition: "0 34%",
-          animationDuration: "78s",
-          ["--bsl-drift" as string]: "460px",
+          backgroundSize: "300px auto",
+          backgroundPosition: "0 32%",
+          animationDuration: "90s",
+          ["--bsl-drift" as string]: "300px",
         } as CSSProperties)}
       />
-      {/* near planes — faster, larger, drifting right */}
+      {/* near planes — slightly larger, still subtle, drifting right */}
       <div
-        className="absolute inset-0 opacity-[0.22]"
+        className="absolute inset-0 opacity-[0.09]"
         style={layer({
           backgroundImage: `url(${img})`,
-          backgroundSize: "780px auto",
-          backgroundPosition: "0 72%",
-          animationDuration: "44s",
-          ["--bsl-drift" as string]: "780px",
+          backgroundSize: "440px auto",
+          backgroundPosition: "0 74%",
+          animationDuration: "52s",
+          ["--bsl-drift" as string]: "440px",
         } as CSSProperties)}
       />
     </div>
