@@ -13,10 +13,11 @@ const display = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: "Balsalameh",
-    template: "%s · Balsalameh",
+    default: "Belsalameh — Fly in relief",
+    template: "%s · Belsalameh",
   },
-  description: "Balsalameh Membership.",
+  description:
+    "Belsalameh unlocks protected flat rates for 1–4 kg of excess baggage, co-created with founding partner Royal Jordanian. Pay at the airport counter.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -150,11 +150,11 @@ function JoinDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
         </button>
 
         <h2 id={titleId} className="font-display text-2xl font-bold text-ink">
-          Get your membership
+          Activate your membership
         </h2>
         <p className="mt-1 text-sm text-ink-muted">
-          Enter your details, agree to the policies, and continue to the secure
-          payment page.
+          One-time annual fee, zero auto-renewals. Enter your details, agree to the
+          policies, and continue to the secure payment page.
         </p>
 
         <div className="mt-4 flex items-center justify-between rounded-xl bg-brand-cream/70 px-4 py-3">
@@ -164,7 +164,7 @@ function JoinDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
           </span>
         </div>
         <p className="mt-1 text-xs text-ink-subtle">
-          Placeholder amount. Final price to be confirmed before launch.
+          Indicative fee. Final amount confirmed before launch.
         </p>
 
         <div className="mt-5">

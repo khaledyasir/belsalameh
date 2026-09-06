@@ -27,7 +27,7 @@ const LABELS: Record<keyof Values, string> = {
   fullName: "Full name",
   email: "Email address",
   confirmEmail: "Confirm email address",
-  agreeTerms: "Terms & Conditions and Fair Usage Policy",
+  agreeTerms: "Terms & Conditions",
   confirmPrivacy: "Data protection confirmation",
 };
 
@@ -149,7 +149,7 @@ export function CheckoutForm() {
         >
           I agree to the{" "}
           <Link href="/legal/terms" target="_blank" className="font-medium text-brand-indigo underline">
-            Terms &amp; Conditions and Fair Usage Policy
+            Terms &amp; Conditions
           </Link>
           .
         </Check>

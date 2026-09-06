@@ -20,7 +20,7 @@ export const checkoutSchema = z
     confirmEmail: z.string().trim().toLowerCase().email("Re-enter your email address"),
     agreeTerms: z.coerce
       .boolean()
-      .refine((v) => v === true, "You must accept the Terms & Conditions and Fair Usage Policy"),
+      .refine((v) => v === true, "You must accept the Terms & Conditions"),
     confirmPrivacy: z.coerce
       .boolean()
       .refine((v) => v === true, "You must confirm the data protection statement"),

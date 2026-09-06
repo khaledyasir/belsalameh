@@ -6,7 +6,7 @@
  * public checkout both read from here.
  */
 export const MEMBERSHIP = {
-  name: "Balsalameh Membership",
+  name: "Belsalameh Membership",
   /** minor units — 25000 = 25.000 JOD (placeholder) */
   priceMinor: 25_000,
   currency: "JOD",

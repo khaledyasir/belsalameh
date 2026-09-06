@@ -1,29 +1,20 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Text wordmark stand-in for the Balsalameh logo.
- * PLACEHOLDER: replace with the supplied vector logo (SVG) in Phase 4/5.
- * The gold dot echoes the airplane motif from the brand guidelines.
+ * Belsalameh logo. `tone="light"` = white/gold artwork for dark backgrounds;
+ * `tone="dark"` = indigo/gold artwork for light backgrounds.
+ * Source art: content/logo-BESALAMA.png (cropped + recoloured into /public).
  */
 export function Wordmark({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-baseline gap-1.5 font-display text-lg font-bold tracking-tight",
-        tone === "light" ? "text-white" : "text-brand-indigo",
-        className,
-      )}
-    >
-      Balsalameh
-      <span className="h-1.5 w-1.5 rounded-full bg-brand-orange" aria-hidden />
-      <span
-        className={cn(
-          "text-[0.65rem] font-medium uppercase tracking-[0.2em]",
-          tone === "light" ? "text-brand-cream/70" : "text-ink-muted",
-        )}
-      >
-        Airport
-      </span>
-    </span>
+    <Image
+      src={tone === "light" ? "/logo-belsalameh.png" : "/logo-belsalameh-dark.png"}
+      alt="Belsalameh — Fly in relief"
+      width={524}
+      height={284}
+      priority
+      className={cn("h-9 w-auto", className)}
+    />
   );
 }

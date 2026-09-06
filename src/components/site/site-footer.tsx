@@ -1,26 +1,26 @@
 import Link from "next/link";
-import { SITE } from "@/lib/site-content";
+import { Wordmark } from "@/components/wordmark";
+import { SITE, CONTACT_EMAIL } from "@/lib/site-content";
 
 export function SiteFooter() {
-  const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 text-sm sm:grid-cols-3 sm:px-6">
+    <footer className="bg-brand-indigo text-brand-cream/80">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 text-sm sm:grid-cols-3 sm:px-6">
         <div>
-          <p className="font-display text-base font-semibold text-ink">Balsalameh</p>
-          <p className="mt-1 text-ink-muted">{SITE.footer.companyLine.replace("{year}", String(year))}</p>
+          <Wordmark tone="light" className="h-10 w-auto" />
+          <p className="mt-3 font-display text-base text-brand-cream">{SITE.footer.tagline}</p>
         </div>
 
         <nav aria-label="Footer">
-          <p className="font-medium text-ink">Legal</p>
-          <ul className="mt-2 space-y-1.5 text-ink-muted">
+          <p className="font-medium text-white">Legal</p>
+          <ul className="mt-2 space-y-1.5">
             <li>
-              <Link href="/legal/terms" className="hover:text-ink hover:underline">
-                Terms &amp; Conditions and Fair Usage Policy
+              <Link href="/legal/terms" className="hover:text-white hover:underline">
+                Terms &amp; Conditions
               </Link>
             </li>
             <li>
-              <Link href="/legal/privacy" className="hover:text-ink hover:underline">
+              <Link href="/legal/privacy" className="hover:text-white hover:underline">
                 Privacy Policy
               </Link>
             </li>
@@ -28,10 +28,15 @@ export function SiteFooter() {
         </nav>
 
         <div>
-          <p className="font-medium text-ink">Support</p>
-          <p className="mt-2 text-ink-muted">{SITE.footer.supportEmail}</p>
-          <p className="mt-4 text-xs text-ink-subtle">{SITE.footer.note}</p>
+          <p className="font-medium text-white">Help</p>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="mt-2 block hover:text-white hover:underline">
+            {CONTACT_EMAIL}
+          </a>
         </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-brand-cream/60 sm:px-6">{SITE.footer.copyright}</p>
       </div>
     </footer>
   );
