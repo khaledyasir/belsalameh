@@ -65,3 +65,12 @@
     font-family: theme("fontFamily.display");
   }
 }
+
+/* Animated sky — decorative drifting airplane layers (AnimatedSky component).
+   Each layer travels exactly one tile width (--bsl-drift) so the loop is seamless.
+   Frozen automatically under the prefers-reduced-motion block above. */
+@keyframes bsl-drift {
+  to {
+    background-position-x: var(--bsl-drift, 600px);
+  }
+}

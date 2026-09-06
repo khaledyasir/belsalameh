@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ShieldCheck, Ban, RefreshCcwDot, MailCheck, Plane, Check } from "lucide-react";
 import { JoinTrigger } from "@/components/site/join";
-import { AirplanePattern } from "@/components/site/airplane-pattern";
+import { AnimatedSky } from "@/components/site/animated-sky";
 import { FaqAccordion } from "@/components/site/faq-accordion";
 import { SITE, PARTNER } from "@/lib/site-content";
 
@@ -21,15 +21,15 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-brand-cream">
         <div
           aria-hidden
-          className="absolute inset-0 -z-10"
+          className="absolute inset-0"
           style={{
             background:
               "radial-gradient(60rem 32rem at 82% 8%, rgba(247,166,99,0.55), rgba(250,220,168,0.28) 38%, rgba(255,243,224,0) 68%)",
           }}
         />
-        <AirplanePattern className="-z-10 text-brand-orange opacity-[0.07]" />
+        <AnimatedSky variant="gold" />
 
-        <div className="mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 sm:pb-28 sm:pt-24">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 sm:pb-28 sm:pt-24">
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-purple">
               <Plane className="h-3.5 w-3.5" aria-hidden />
@@ -194,7 +194,7 @@ export default function LandingPage() {
       {/* ── Final CTA ──────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="relative overflow-hidden rounded-3xl bg-brand-indigo px-6 py-14 text-center sm:px-12">
-          <AirplanePattern className="text-white opacity-[0.06]" />
+          <AnimatedSky variant="white" />
           <h2 className="relative font-display text-3xl font-bold text-white">{SITE.finalCta.heading}</h2>
           <p className="relative mx-auto mt-3 max-w-2xl text-brand-cream/80">{SITE.finalCta.body}</p>
           <div className="relative mt-7 flex justify-center">
