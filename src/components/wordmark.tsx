@@ -10,7 +10,7 @@ export function Wordmark({ className, tone = "light" }: { className?: string; to
   return (
     <Image
       src={tone === "light" ? "/logo-belsalameh.png" : "/logo-belsalameh-dark.png"}
-      alt="Belsalameh — Fly in relief"
+      alt="Belsalameh, Fly in relief"
       width={524}
       height={284}
       priority

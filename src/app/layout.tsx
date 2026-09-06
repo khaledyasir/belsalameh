@@ -13,7 +13,7 @@ const display = Crimson_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: "Belsalameh — Fly in relief",
+    default: "Belsalameh · Fly in relief",
     template: "%s · Belsalameh",
   },
   description:

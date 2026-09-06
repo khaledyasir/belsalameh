@@ -45,7 +45,7 @@ export function AnimatedSky({ variant = "gold", className }: Props) {
           backgroundImage: `url(${img})`,
           backgroundSize: "300px auto",
           backgroundPosition: "0 32%",
-          animationDuration: "58s",
+          animationDuration: "43s",
           ["--bsl-drift" as string]: "300px",
         } as CSSProperties)}
       />
