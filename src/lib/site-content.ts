@@ -59,16 +59,19 @@ export const SITE = {
   },
 
   service: {
-    heading: "Exclusive airport micro-services, co-created for modern travelers",
-    intro: `Belsalameh is your gateway to unlisted member services and protected airport rates that airlines don't sell publicly, unlocked simply by being a member. We were created to make the airport less stressful, and we launch alongside our founding partner, ${PARTNER}.`,
-    launchTitle: `1–4 kg micro-excess baggage service`,
-    launchBody: `Slightly over your standard 23 kg allowance? Available exclusively for ${PARTNER} travelers, this service unlocks unlisted member rates for minor excess baggage from 1.00 kg up to 4.00 kg, capping your bag at a maximum of 27.00 kg. No hidden fees, no counter stress. Pay your protected member rate directly at the check-in counter.`,
-  },
-
-  memberServices: {
-    heading: "Current services & rates",
-    body: "Member rates are shown at the airport check-in counter with full price transparency. The published rate card will appear here at launch.",
-    note: "[rates pending]",
+    heading: "The service",
+    lead: `Belsalameh unlocks unlisted airport micro-services and protected rates, co-created with full-service partner carriers and not sold to the public. Today we run one launch service, with founding partner ${PARTNER}.`,
+    name: "1–4 kg Micro-Excess Baggage Service",
+    eligibility: `Exclusively for ${PARTNER} passengers, on flights with an RJ booking reference.`,
+    body: "Slightly over your standard 23 kg allowance? Instead of steep excess-baggage charges, show your confirmation email at the check-in counter and pay a fixed, protected member rate on the spot.",
+    points: [
+      "Covers 1.00 to 4.00 kg over the standard 23 kg allowance",
+      "Checked bag capped at 27.00 kg total",
+      "One checked bag per member, matching the passport name on file",
+      "Paid at the counter with full price transparency, no online booking",
+    ],
+    ratesNote:
+      "Member rates are shown at the check-in counter. The published rate card will appear here at launch.",
   },
 
   steps: {

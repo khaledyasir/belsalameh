@@ -109,6 +109,54 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── The service ────────────────────────────────────── */}
+      <section id="member-services" className="scroll-mt-20 bg-brand-cream">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.service.heading}</h2>
+            <p className="mt-4 text-base leading-relaxed text-ink-muted">{SITE.service.lead}</p>
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-brand-indigo/20 bg-white p-6 shadow-sm sm:p-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-indigo px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+              <Plane className="h-3.5 w-3.5" aria-hidden />
+              Launch service · {PARTNER} only
+            </span>
+            <h3 className="mt-4 font-display text-2xl font-bold text-brand-indigo">{SITE.service.name}</h3>
+            <p className="mt-1 text-sm text-ink-muted">{SITE.service.eligibility}</p>
+
+            {/* weight-range visual */}
+            <div className="mt-6">
+              <div className="flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
+                <div className="flex-[23] bg-brand-indigo/20" />
+                <div className="flex-[4] bg-brand-orange" />
+                <div className="flex-[5] bg-brand-indigo/10" />
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                <span className="text-ink-muted">Up to 23 kg · standard allowance</span>
+                <span className="text-center font-semibold text-brand-orange">24–27 kg · member rate</span>
+                <span className="text-right text-ink-muted">Over 27 kg · standard fees</span>
+              </div>
+            </div>
+
+            <p className="mt-6 text-sm leading-relaxed text-ink-muted">{SITE.service.body}</p>
+
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+              {SITE.service.points.map((pt) => (
+                <li key={pt} className="flex gap-2 text-sm text-ink-muted">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-orange" aria-hidden />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-6 border-t border-brand-sand/70 pt-4 text-xs text-ink-subtle">
+              {SITE.service.ratesNote}
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Benefits ────────────────────────────────────────── */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.benefits.heading}</h2>
@@ -128,32 +176,6 @@ export default function LandingPage() {
               </div>
             );
           })}
-        </div>
-      </section>
-
-      {/* ── Service overview ────────────────────────────────── */}
-      <section id="member-services" className="scroll-mt-20 bg-brand-cream">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="max-w-3xl">
-            <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.service.heading}</h2>
-            <p className="mt-4 text-base leading-relaxed text-ink-muted">{SITE.service.intro}</p>
-          </div>
-
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
-            <div className="rounded-2xl border border-brand-indigo/15 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-purple">Launch service</p>
-              <h3 className="mt-2 font-display text-xl font-semibold text-brand-indigo">{SITE.service.launchTitle}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-muted">{SITE.service.launchBody}</p>
-            </div>
-
-            <div className="rounded-2xl border border-brand-sand/70 bg-white p-6 shadow-sm">
-              <h3 className="font-display text-xl font-semibold text-brand-indigo">{SITE.memberServices.heading}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-muted">{SITE.memberServices.body}</p>
-              <p className="mt-4 inline-flex rounded-full bg-brand-cream px-3 py-1 text-xs font-medium text-ink-subtle">
-                Published rate card coming at launch
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
