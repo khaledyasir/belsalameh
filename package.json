@@ -1,8 +1,11 @@
 {
-  "name": "balsalameh-platform",
+  "name": "belsalameh-platform",
   "version": "0.1.0",
   "private": true,
-  "description": "Balsalameh membership platform - admin console (Phase 1)",
+  "description": "Belsalameh membership platform: public site + admin console + SQL Server payment lifecycle",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
