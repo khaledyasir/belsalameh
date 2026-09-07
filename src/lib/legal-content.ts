@@ -2,6 +2,10 @@
  * Legal copy. Source: content/BELSALAMEH TERMS & CONDITIONS.docx and
  * content/BELSALAMEH PRIVACY POLICY.docx (lightly condensed for the web).
  */
+import { CONTACT_EMAIL } from "./site-content";
+
+const E = CONTACT_EMAIL; // single source for the support address
+
 export type LegalDoc = {
   title: string;
   updated: string;
@@ -32,7 +36,7 @@ export const TERMS: LegalDoc = {
         "Zero auto-renewals & no account creation: Belsalameh will never set up recurring billing, auto-renewals, or automatic deductions. Activation requires no login credentials, password setup, or digital account. Upon expiration you simply rejoin online at your convenience.",
         "14-day advance activation: to ensure proper database processing with operating carriers, memberships must be activated at least 14 days prior to your travel date. Later activations may suffer technical validation delays at the airport counter.",
         "Proof of membership: on successful payment, an automated confirmation email is issued containing the member’s full name (matching their passport). This email serves as your official proof of active membership and must be presented (on a mobile device or printed) to the check-in agent.",
-        "Missing or lost confirmation emails: if you do not receive your email (including junk/spam) or delete it, contact help@blsalameh.com immediately. We will re-issue it within up to 5 working days.",
+        `Missing or lost confirmation emails: if you do not receive your email (including junk/spam) or delete it, contact ${E} immediately. We will re-issue it within up to 5 working days.`,
       ],
     },
     {
@@ -56,7 +60,7 @@ export const TERMS: LegalDoc = {
       heading: "5. Service discrepancy & reimbursement resolution",
       body: [
         "Denied counter privileges: if a check-in agent is unfamiliar with Belsalameh or charges standard rates on an eligible RJ-operated flight, pay the counter fee to proceed with your travel and retain all receipts.",
-        "Claim submission: file a claim within 14 days of travel by emailing help@blsalameh.com with the official airline payment receipt (showing charges paid under the member’s full name) and the official baggage tag slip (proving the bag weighed 27.00 kg or below).",
+        `Claim submission: file a claim within 14 days of travel by emailing ${E} with the official airline payment receipt (showing charges paid under the member’s full name) and the official baggage tag slip (proving the bag weighed 27.00 kg or below).`,
         "5-day resolution guarantee: Belsalameh reviews claims within 5 working days. For verified eligible claims we issue direct monetary compensation covering the exact price difference paid above the protected member rate.",
       ],
     },
@@ -70,7 +74,7 @@ export const TERMS: LegalDoc = {
     {
       heading: "7. Governing law & contact",
       body: [
-        "These terms are governed by the applicable commercial laws of our operating jurisdiction. For claim submissions, membership inquiries, or confirmation email re-issuances, contact help@blsalameh.com.",
+        `These terms are governed by the applicable commercial laws of our operating jurisdiction. For claim submissions, membership inquiries, or confirmation email re-issuances, contact ${E}.`,
       ],
     },
   ],
@@ -89,7 +93,7 @@ export const PRIVACY: LegalDoc = {
         "Personal identification data: your full legal name, exactly as it appears on your passport.",
         "Contact information: your verified email address.",
         "Payment processing information: transaction details processed securely via third-party payment gateway providers. Belsalameh does not store credit card numbers or banking details on our servers.",
-        "Support & reimbursement data: receipts, baggage slips, and communication logs submitted to help@blsalameh.com in the event of a service discrepancy claim.",
+        `Support & reimbursement data: receipts, baggage slips, and communication logs submitted to ${E} in the event of a service discrepancy claim.`,
       ],
     },
     {
@@ -126,7 +130,7 @@ export const PRIVACY: LegalDoc = {
     {
       heading: "6. Contact",
       body: [
-        "For any privacy-related inquiries, data access requests, or questions about how your information is handled, contact our help team at help@blsalameh.com.",
+        `For any privacy-related inquiries, data access requests, or questions about how your information is handled, contact our help team at ${E}.`,
       ],
     },
   ],

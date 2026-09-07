@@ -5,6 +5,9 @@
  */
 export const siteEnabled = process.env.PUBLIC_SITE_ENABLED === "true";
 
+// Support address. Spelled per the client's documents (blsalameh.com, no "e").
+// This is the single source — every reference on the site and in the legal
+// pages uses it. Change it here if the domain should be belsalameh.com.
 export const CONTACT_EMAIL = "help@blsalameh.com";
 export const PARTNER = "Royal Jordanian";
 export const EARLY_BIRD_DATE = "December 31, 2028";
