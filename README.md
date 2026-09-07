@@ -78,6 +78,34 @@ name / email / password are then managed in **Admin › My profile**.
 
 ---
 
+## Deploying to Vercel
+
+The public site (`/`, `/faq`, `/legal/*`) deploys with **no env vars at all**.
+Admin / login / checkout additionally need a **publicly reachable** SQL Server —
+a local `localhost` instance is not reachable from Vercel; use Azure SQL Database
+or another hosted MSSQL.
+
+Set these in **Project → Settings → Environment Variables**, then **redeploy**
+(env changes only apply to new deployments):
+
+| Variable | Value |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | your Vercel URL, e.g. `https://belsalameh.vercel.app` (inlined at build time) |
+| `AUTH_SECRET` | a long random string |
+| `PUBLIC_SITE_ENABLED` | `true` to drop the pre-launch noindex |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_NAME` / `ADMIN_EMAIL` | first admin (seed once, then manage in-app) |
+| `DATABASE_URL` | `sqlserver://<host>:1433;database=<db>;user=<u>;password=<p>;encrypt=true` (only if wiring the admin) |
+
+**Do not** add `NODE_ENV` — Vercel reserves it, and importing a `.env` that
+contains it makes the whole import fail silently. Delete the `NODE_ENV`,
+`localhost` `DATABASE_URL`, and `http://localhost:3000` lines from any `.env`
+before importing.
+
+After the DB is reachable: run `npm run db:push` and `npm run db:seed` against it
+once (from your machine, pointed at the hosted `DATABASE_URL`).
+
+---
+
 ## Project structure
 
 ```
