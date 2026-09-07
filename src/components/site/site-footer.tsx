@@ -55,7 +55,20 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-brand-cream/60 sm:px-6">{SITE.footer.copyright}</p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 text-xs text-brand-cream/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p>{SITE.footer.copyright}</p>
+          <nav aria-label="Footer links" className="flex gap-4">
+            <Link href="/legal/terms" className="hover:text-white hover:underline">
+              Terms
+            </Link>
+            <Link href="/legal/privacy" className="hover:text-white hover:underline">
+              Privacy
+            </Link>
+            <Link href="/faq" className="hover:text-white hover:underline">
+              FAQ
+            </Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );
