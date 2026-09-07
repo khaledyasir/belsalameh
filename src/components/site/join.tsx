@@ -13,7 +13,6 @@ import { createPortal } from "react-dom";
 import { Plane, X } from "lucide-react";
 import { CheckoutForm } from "./checkout-form";
 import { MEMBERSHIP } from "@/lib/membership";
-import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type JoinContextValue = { open: () => void; close: () => void; isOpen: boolean };
@@ -157,15 +156,15 @@ function JoinDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
           policies, and continue to the secure payment page.
         </p>
 
-        <div className="mt-4 flex items-center justify-between rounded-xl bg-brand-cream/70 px-4 py-3">
-          <span className="text-sm text-ink-muted">{MEMBERSHIP.name}</span>
-          <span className="font-display text-lg font-bold text-ink">
-            {formatMoney(MEMBERSHIP.priceMinor, MEMBERSHIP.currency)}
-          </span>
+        <div className="mt-4 rounded-xl bg-brand-cream/70 px-4 py-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-ink-muted">{MEMBERSHIP.name}</span>
+            <span className="font-medium text-ink">Annual · one-time fee</span>
+          </div>
+          <p className="mt-1 text-xs text-ink-subtle">
+            The membership fee is shown on the secure payment page before you pay.
+          </p>
         </div>
-        <p className="mt-1 text-xs text-ink-subtle">
-          Indicative fee. Final amount confirmed before launch.
-        </p>
 
         <div className="mt-5">
           <CheckoutForm />
