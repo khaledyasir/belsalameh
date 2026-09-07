@@ -37,6 +37,7 @@ export const TERMS: LegalDoc = {
         "14-day advance activation: to ensure proper database processing with operating carriers, memberships must be activated at least 14 days prior to your travel date. Later activations may suffer technical validation delays at the airport counter.",
         "Proof of membership: on successful payment, an automated confirmation email is issued containing the member’s full name (matching their passport). This email serves as your official proof of active membership and must be presented (on a mobile device or printed) to the check-in agent.",
         `Missing or lost confirmation emails: if you do not receive your email (including junk/spam) or delete it, contact ${E} immediately. We will re-issue it within up to 5 working days.`,
+        "Fraud, misuse & membership termination: Belsalameh may immediately terminate or revoke an active membership, without refund or prior notice, if a member engages in fraudulent activity, deliberate misrepresentation of passenger identity (including mismatched passport details), altered confirmation emails, or abuse of platform privileges. Attempts to bypass platform policies or fraudulently exploit airline counter verification may be subject to legal action under applicable commercial and digital anti-fraud laws.",
       ],
     },
     {
@@ -59,9 +60,10 @@ export const TERMS: LegalDoc = {
     {
       heading: "5. Service discrepancy & reimbursement resolution",
       body: [
-        "Denied counter privileges: if a check-in agent is unfamiliar with Belsalameh or charges standard rates on an eligible RJ-operated flight, pay the counter fee to proceed with your travel and retain all receipts.",
-        `Claim submission: file a claim within 14 days of travel by emailing ${E} with the official airline payment receipt (showing charges paid under the member’s full name) and the official baggage tag slip (proving the bag weighed 27.00 kg or below).`,
-        "5-day resolution guarantee: Belsalameh reviews claims within 5 working days. For verified eligible claims we issue direct monetary compensation covering the exact price difference paid above the protected member rate.",
+        "Operational restrictions excluded: direct monetary reimbursement applies strictly and only to verified cases where an airport check-in agent fails or refuses to recognise an active Belsalameh membership on an eligible flight. It does not apply to service unavailability caused by operating-carrier restrictions, including aircraft payload limits, route weight caps, peak-season restrictions, or bags exceeding the 27.00 kg maximum.",
+        `Claim submission: if a check-in agent refuses to recognise an active membership on an eligible flight, pay the airline counter fee to proceed with travel, keep all documentation, and email a claim to ${E} within 14 days of travel. The claim must include: (1) the flight number and flight date; (2) the official airline payment receipt showing counter charges paid under the member’s full legal name; and (3) the official airline baggage tag slip proving the checked bag weighed 27.00 kg or below.`,
+        "5-day resolution guarantee: Belsalameh cross-verifies the flight details against airline operational logs and resolves valid claims within 5 working days. For verified cases of non-recognition on an unrestricted eligible flight, Belsalameh issues direct monetary compensation covering the exact price difference paid above the protected member rate.",
+        "Fraud, misuse & claim forfeiture: submitting falsified payment receipts, altered baggage tags, or misrepresented flight dates or details results in immediate claim denial, permanent revocation of membership without refund, and potential legal action under applicable anti-fraud regulations.",
       ],
     },
     {
