@@ -1,0 +1,57 @@
+name: Deploy bundle
+
+# Builds a ready-to-run deploy bundle so the server team never clones the repo
+# or runs a build. Trigger manually (Actions tab -> Run workflow) or push a
+# version tag (v1.0.0). Download "belsalameh-deploy" from the run, or grab the
+# zip attached to the matching Release.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  bundle:
+    # Build on Windows so Prisma's query-engine binary matches the target server.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # emits .next/standalone/ ; postbuild copies static/, public/ and .prisma/
+      - run: npm run build
+
+      - name: Assemble deploy folder
+        shell: pwsh
+        run: |
+          $out = "deploy"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item -Recurse -Force .next/standalone/* $out
+          Copy-Item -Force web.config       $out
+          Copy-Item -Force .env.example     $out
+          Copy-Item -Force DEPLOY.md        $out
+          Copy-Item -Recurse -Force scripts $out/scripts
+          Copy-Item -Recurse -Force db      $out/db
+          New-Item -ItemType Directory -Force -Path "$out/logs" | Out-Null
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path deploy/* -DestinationPath belsalameh-deploy.zip -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belsalameh-deploy
+          path: belsalameh-deploy.zip
+          retention-days: 30
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: belsalameh-deploy.zip

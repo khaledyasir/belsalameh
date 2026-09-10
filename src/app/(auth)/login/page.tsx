@@ -27,7 +27,9 @@ export default async function LoginPage({
 
           {error && (
             <p role="alert" className="mt-3 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-              Incorrect username or password.
+              {error === "locked"
+                ? "Too many sign-in attempts. Wait 15 minutes and try again."
+                : "Incorrect username or password."}
             </p>
           )}
 

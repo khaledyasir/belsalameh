@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PAYMENTS_LIVE } from "@/lib/config";
+import { ALLOW_SIMULATED_PAYMENT } from "@/lib/config";
 import { confirmSimulatedPayment } from "../actions";
 
 export const metadata: Metadata = { title: "Redirecting to payment" };
@@ -33,7 +33,7 @@ export default async function ProcessingPage({
         </p>
       )}
 
-      {!PAYMENTS_LIVE && ref && (
+      {ALLOW_SIMULATED_PAYMENT && ref && (
         <div className="mt-8 rounded-lg border border-warning/40 bg-warning/10 p-4 text-left text-sm text-[#7a4d0f]">
           <p className="font-medium">Payment gateway not connected yet (Phase 3)</p>
           <p className="mt-1">

@@ -14,6 +14,40 @@ const ORANGE_PILL =
 
 const BENEFIT_ICONS = [ShieldCheck, Ban, RefreshCcwDot, MailCheck];
 
+function WeightBand({
+  range,
+  title,
+  note,
+  highlight,
+}: {
+  range: string;
+  title: string;
+  note: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={
+        highlight
+          ? "rounded-xl border-2 border-brand-orange bg-brand-orange/10 p-4"
+          : "rounded-xl border border-brand-indigo/15 bg-brand-cream/40 p-4"
+      }
+    >
+      <p
+        className={
+          highlight
+            ? "text-xs font-bold uppercase tracking-wide text-brand-orange"
+            : "text-xs font-semibold uppercase tracking-wide text-ink-subtle"
+        }
+      >
+        {range}
+      </p>
+      <p className="mt-1.5 font-display text-base font-semibold text-brand-indigo">{title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-ink-muted">{note}</p>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   return (
     <>
@@ -125,17 +159,32 @@ export default function LandingPage() {
             <h3 className="mt-4 font-display text-2xl font-bold text-brand-indigo">{SITE.service.name}</h3>
             <p className="mt-1 text-sm text-ink-muted">{SITE.service.eligibility}</p>
 
-            {/* weight-range visual */}
+            {/* where the membership applies — three weight bands */}
             <div className="mt-6">
-              <div className="flex h-3 gap-0.5 overflow-hidden rounded-full" aria-hidden>
-                <div className="flex-[23] bg-brand-indigo/20" />
-                <div className="flex-[4] bg-brand-orange" />
-                <div className="flex-[5] bg-brand-indigo/10" />
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-                <span className="text-ink-muted">Up to 23 kg · standard allowance</span>
-                <span className="text-center font-semibold text-brand-orange">24–27 kg · member rate</span>
-                <span className="text-right text-ink-muted">Over 27 kg · standard fees</span>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                Where your membership applies
+              </p>
+              <div className="mt-3 grid gap-x-3 gap-y-2 sm:grid-cols-[1fr_1.25fr_1fr]">
+                <div aria-hidden className="hidden h-1.5 rounded-full bg-brand-indigo/15 sm:block" />
+                <div aria-hidden className="hidden h-1.5 rounded-full bg-brand-orange sm:block" />
+                <div aria-hidden className="hidden h-1.5 rounded-full bg-brand-indigo/15 sm:block" />
+
+                <WeightBand
+                  range="Up to 23 kg"
+                  title="Standard allowance"
+                  note={`Included with your ${PARTNER} ticket. Nothing to pay.`}
+                />
+                <WeightBand
+                  highlight
+                  range="23 to 27 kg"
+                  title="Your member rate"
+                  note="The 1–4 kg over your allowance. Show your confirmation email and pay a fixed, protected rate at the counter instead of airline excess fees."
+                />
+                <WeightBand
+                  range="Over 27 kg"
+                  title="Not covered"
+                  note="Outside this service. Standard airline excess-baggage rates apply."
+                />
               </div>
             </div>
 

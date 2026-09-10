@@ -7,8 +7,9 @@ import type { CSSProperties } from "react";
  * in globals.css); each layer travels exactly one tile width so it loops
  * seamlessly, and it freezes under prefers-reduced-motion.
  *
- * Assets: /public/planes-{gold,white}.png (keyed from content/Gemini_*).
- * Put it inside a `relative overflow-hidden` parent.
+ * Assets: /public/planes-{gold,white}.webp — the brand artwork, downscaled to
+ * 640px and WebP-compressed (~33 KB total) since it only ever renders small and
+ * faint. Put it inside a `relative overflow-hidden` parent.
  */
 type Props = { variant?: "gold" | "white"; className?: string };
 
@@ -22,7 +23,7 @@ function layer(style: CSSProperties): CSSProperties {
 }
 
 export function AnimatedSky({ variant = "gold", className }: Props) {
-  const img = variant === "gold" ? "/planes-gold.png" : "/planes-white.png";
+  const img = variant === "gold" ? "/planes-gold.webp" : "/planes-white.webp";
 
   return (
     <div aria-hidden className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>

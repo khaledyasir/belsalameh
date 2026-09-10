@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { capturePayment } from "@/lib/payments";
-import { PAYMENTS_LIVE } from "@/lib/config";
+import { ALLOW_SIMULATED_PAYMENT } from "@/lib/config";
 
 /**
  * Manual stand-in for the MEPS payment callback, used on the hand-off page
@@ -10,7 +10,7 @@ import { PAYMENTS_LIVE } from "@/lib/config";
  * calls the same `capturePayment()`.
  */
 export async function confirmSimulatedPayment(formData: FormData) {
-  if (PAYMENTS_LIVE) redirect("/"); // disabled once real payments are on
+  if (!ALLOW_SIMULATED_PAYMENT) redirect("/"); // opt-in only; never on by default
 
   const reference = String(formData.get("ref") ?? "");
   const result = await capturePayment(reference, { providerRef: "SIMULATED", rawResponse: { simulated: true } });

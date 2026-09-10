@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { checkoutSchema, toFieldErrors, type CheckoutState } from "@/lib/checkout";
 import { createPendingTransaction } from "@/lib/payments";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * Validates the checkout form, creates a PENDING transaction, and hands off to
@@ -26,6 +27,16 @@ export async function startCheckout(
 
   if (!parsed.success) {
     return { errors: toFieldErrors(parsed.error), formError: "Please correct the highlighted fields." };
+  }
+
+  // Throttle bot spam into the Transaction table. ponytail: in-memory per-instance;
+  // add Cloudflare Turnstile here if you need real bot resistance.
+  const ip = await clientIp();
+  const allowed =
+    rateLimit(`checkout:ip:${ip}`, 5, 10 * 60_000) &&
+    rateLimit(`checkout:email:${parsed.data.email}`, 3, 60 * 60_000);
+  if (!allowed) {
+    return { errors: {}, formError: "Too many attempts. Please wait a few minutes and try again." };
   }
 
   const { reference } = await createPendingTransaction({

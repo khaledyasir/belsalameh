@@ -21,8 +21,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env
+# local env files — private repo, .env is committed on purpose
 .env*.local
 
 # typescript
@@ -43,3 +42,4 @@ yarn-error.log*
 /.claude/
 /.agents/
 /skills-lock.json
+/.claude-flow/

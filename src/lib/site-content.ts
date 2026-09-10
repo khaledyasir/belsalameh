@@ -5,9 +5,9 @@
  */
 export const siteEnabled = process.env.PUBLIC_SITE_ENABLED === "true";
 
-// Support address — domain "blsalameh.com" (no "e") confirmed by the client.
-// Single source: every reference on the site and in the legal pages uses this.
-export const CONTACT_EMAIL = "help@blsalameh.com";
+// Support address. Single source: every reference on the site, the legal pages,
+// and the transaction emails (from + company copy) uses this.
+export const CONTACT_EMAIL = "support@belsalameh.com";
 export const PARTNER = "Royal Jordanian";
 export const EARLY_BIRD_DATE = "December 31, 2028";
 

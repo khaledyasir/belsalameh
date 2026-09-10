@@ -9,7 +9,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "postbuild": "node -e \"const{cpSync,existsSync}=require('fs');cpSync('.next/static','.next/standalone/.next/static',{recursive:true});cpSync('public','.next/standalone/public',{recursive:true});if(existsSync('node_modules/.prisma'))cpSync('node_modules/.prisma','.next/standalone/node_modules/.prisma',{recursive:true})\"",
     "start": "next start",
+    "start:standalone": "node .next/standalone/server.js",
+    "setup": "npm run build && prisma db push && prisma db seed",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",

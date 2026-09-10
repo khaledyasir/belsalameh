@@ -1,9 +1,12 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import { db } from "./db";
 import { MEMBERSHIP } from "./membership";
 import { CONSENT_VERSION } from "./config";
 import { newMembershipId } from "./membership-id";
 import { formatExpiry } from "./format";
+import { deliverMembershipEmails } from "./emails";
+import { EMAIL_COMPANY_NOTIFY } from "./config";
 
 /**
  * Payment lifecycle. Both the manual "confirm" affordance on the hand-off page
@@ -12,7 +15,9 @@ import { formatExpiry } from "./format";
  */
 
 function newReference(): string {
-  return "BSL-ORD-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  // Unguessable: the reference is the only key the /checkout/success page and the
+  // MEPS return URL carry, so it must not be enumerable.
+  return "BSL-ORD-" + randomBytes(12).toString("base64url").toUpperCase();
 }
 
 /** Called from the checkout form (server action) once validation passes. */
@@ -79,7 +84,7 @@ export async function capturePayment(
     membershipId = newMembershipId();
   }
 
-  const member = await db.$transaction(async (tx) => {
+  const { member, proofLogId, notifyLogId } = await db.$transaction(async (tx) => {
     await tx.transaction.update({
       where: { id: txn.id },
       data: {
@@ -103,12 +108,21 @@ export async function capturePayment(
       },
     });
 
-    await tx.emailLog.create({
+    const proofLog = await tx.emailLog.create({
       data: {
         type: "proof_of_membership",
         toAddress: txn.email,
-        subject: "Your Balsalameh membership confirmation",
-        status: "queued", // Phase 3: hand to the email provider and update status
+        subject: `Your Belsalameh membership is active - ${membershipId}`,
+        status: "queued",
+        memberId: created.id,
+      },
+    });
+    const notifyLog = await tx.emailLog.create({
+      data: {
+        type: "internal_notification",
+        toAddress: EMAIL_COMPANY_NOTIFY,
+        subject: `New membership: ${txn.fullName} (${membershipId})`,
+        status: "queued",
         memberId: created.id,
       },
     });
@@ -117,8 +131,30 @@ export async function capturePayment(
       data: { action: "member.created", entity: "Member", entityId: created.id, detail: `reference ${reference}` },
     });
 
-    return created;
+    return { member: created, proofLogId: proofLog.id, notifyLogId: notifyLog.id };
   });
+
+  // Payment is already captured — a failed send must never surface as an error.
+  try {
+    await deliverMembershipEmails({
+      proofLogId,
+      notifyLogId,
+      member: {
+        fullName: member.fullName,
+        email: member.email,
+        membershipId: member.membershipId,
+        expiryMonth,
+        expiryYear,
+        reference,
+      },
+      amountMinor: txn.amountMinor,
+      currency: txn.currency,
+      providerRef: opts.providerRef ?? txn.providerRef,
+      capturedAt: now,
+    });
+  } catch (e) {
+    console.warn("[capturePayment] email delivery threw:", e);
+  }
 
   return {
     ok: true,

@@ -9,14 +9,23 @@
  * Re-running updates the name/email and (if ADMIN_PASSWORD changed) the password.
  */
 import { PrismaClient } from "@prisma/client";
-import { randomBytes, scryptSync } from "node:crypto";
+import { randomBytes, scrypt, type BinaryLike, type ScryptOptions } from "node:crypto";
+import { promisify } from "node:util";
 
 const db = new PrismaClient();
+const scryptAsync = promisify(scrypt) as (
+  password: BinaryLike,
+  salt: BinaryLike,
+  keylen: number,
+  options: ScryptOptions,
+) => Promise<Buffer>;
 
-function makeCredential(password: string) {
+// Must match src/lib/admin-store.ts (N + `<N>$<hex>` format).
+const N = 32768;
+async function makeCredential(password: string) {
   const passwordSalt = randomBytes(16).toString("hex");
-  const passwordHash = scryptSync(password, passwordSalt, 64).toString("hex");
-  return { passwordHash, passwordSalt };
+  const buf = await scryptAsync(password, passwordSalt, 64, { N, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+  return { passwordSalt, passwordHash: `${N}$${buf.toString("hex")}` };
 }
 
 async function main() {
@@ -28,12 +37,12 @@ async function main() {
   const existing = await db.adminUser.findUnique({ where: { username } });
 
   if (!existing) {
-    await db.adminUser.create({ data: { username, email, name, ...makeCredential(password) } });
+    await db.adminUser.create({ data: { username, email, name, ...(await makeCredential(password)) } });
     console.log(`Created admin "${username}".`);
   } else {
     await db.adminUser.update({
       where: { username },
-      data: { email, name, ...makeCredential(password) },
+      data: { email, name, ...(await makeCredential(password)) },
     });
     console.log(`Updated admin "${username}" (name, email, password).`);
   }
