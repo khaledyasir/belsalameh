@@ -43,3 +43,7 @@ yarn-error.log*
 /.agents/
 /skills-lock.json
 /.claude-flow/
+
+# deploy bundle output
+/deploy/
+/belsalameh-deploy.zip

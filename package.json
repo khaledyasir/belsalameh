@@ -13,6 +13,7 @@
     "start": "next start",
     "start:standalone": "node .next/standalone/server.js",
     "setup": "npm run build && prisma db push && prisma db seed",
+    "bundle": "npm run build && node scripts/bundle.mjs",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",

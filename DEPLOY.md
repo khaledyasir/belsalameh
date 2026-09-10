@@ -35,9 +35,10 @@ Two ways to deploy:
 
 ## Option A — release bundle (no build on the server)
 
-1. **Get the bundle.** In GitHub: Actions → **Deploy bundle** → Run workflow
-   (or push a `v*` tag). Download **belsalameh-deploy.zip** from the run, or
-   from the matching Release.
+1. **Get the bundle.** Either:
+   - the developer runs `npm run bundle` locally → produces `belsalameh-deploy.zip`, or
+   - GitHub: Actions → **Deploy bundle** → Run workflow (or push a `v*` tag) →
+     download **belsalameh-deploy.zip** from the run / Release.
 
 2. **Unzip** on the server, e.g. to `C:\inetpub\belsalameh`.
 
