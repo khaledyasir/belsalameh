@@ -43,7 +43,7 @@ function WeightBand({
         {range}
       </p>
       <p className="mt-1.5 font-display text-base font-semibold text-brand-indigo">{title}</p>
-      <p className="mt-1 text-xs leading-relaxed text-ink-muted">{note}</p>
+      <p className="mt-1 text-sm leading-relaxed text-ink-muted">{note}</p>
     </div>
   );
 }
@@ -145,7 +145,7 @@ export default function LandingPage() {
 
       {/* ── The service ────────────────────────────────────── */}
       <section id="member-services" className="scroll-mt-20 bg-brand-cream">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
           <div className="max-w-3xl">
             <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.service.heading}</h2>
             <p className="mt-4 text-base leading-relaxed text-ink-muted">{SITE.service.lead}</p>
@@ -188,11 +188,11 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <p className="mt-6 text-sm leading-relaxed text-ink-muted">{SITE.service.body}</p>
+            <p className="mt-6 text-base leading-relaxed text-ink-muted">{SITE.service.body}</p>
 
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {SITE.service.points.map((pt) => (
-                <li key={pt} className="flex gap-2 text-sm text-ink-muted">
+                <li key={pt} className="flex gap-2 text-base text-ink-muted">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-orange" aria-hidden />
                   {pt}
                 </li>
@@ -207,7 +207,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Benefits ────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.benefits.heading}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {SITE.benefits.items.map((it, i) => {
@@ -221,7 +221,7 @@ export default function LandingPage() {
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h3 className="mt-4 font-display text-lg font-semibold text-brand-indigo">{it.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{it.body}</p>
+                <p className="mt-2 text-base leading-relaxed text-ink-muted">{it.body}</p>
               </div>
             );
           })}
@@ -230,7 +230,7 @@ export default function LandingPage() {
 
       {/* ── How it works ───────────────────────────────────── */}
       <section id="how-it-works" className="scroll-mt-20">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
           <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.steps.heading}</h2>
           <ol className="mt-8 grid gap-8 sm:grid-cols-3">
             {SITE.steps.items.map((s, i) => (
@@ -242,7 +242,7 @@ export default function LandingPage() {
                   {i + 1}
                 </span>
                 <h3 className="mt-4 font-display text-xl font-semibold text-brand-indigo">{s.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{s.body}</p>
+                <p className="mt-1.5 text-base leading-relaxed text-ink-muted">{s.body}</p>
               </li>
             ))}
           </ol>
@@ -251,7 +251,7 @@ export default function LandingPage() {
 
       {/* ── FAQ ────────────────────────────────────────────── */}
       <section className="bg-brand-cream">
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
           <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.faq.heading}</h2>
           <div className="mt-6">
             <FaqAccordion items={SITE.faq.items.slice(0, 6)} />
@@ -263,7 +263,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Final CTA ──────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="relative overflow-hidden rounded-3xl bg-brand-indigo px-6 py-14 text-center sm:px-12">
           <AnimatedSky variant="white" />
           <h2 className="relative font-display text-3xl font-bold text-white">{SITE.finalCta.heading}</h2>

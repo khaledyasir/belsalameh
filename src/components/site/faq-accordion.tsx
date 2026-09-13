@@ -16,7 +16,7 @@ export function FaqAccordion({ items }: { items: readonly { q: string; a: string
               aria-hidden
             />
           </summary>
-          <p className="pb-5 pr-9 text-sm leading-relaxed text-ink-muted">{f.a}</p>
+          <p className="pb-5 pr-9 text-base leading-relaxed text-ink-muted">{f.a}</p>
         </details>
       ))}
     </div>
