@@ -90,9 +90,9 @@ export default function LandingPage() {
               {["1–4 kg excess covered", "Bags up to 27 kg", "Pay at the counter"].map((chip) => (
                 <span
                   key={chip}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-brand-indigo/15 bg-white/70 px-3 py-1 text-xs font-medium text-brand-indigo"
+                  className="inline-flex items-center gap-2 rounded-full border border-brand-indigo/20 bg-white px-4 py-2 text-sm font-semibold text-brand-indigo shadow-sm"
                 >
-                  <Check className="h-3.5 w-3.5 text-brand-orange" aria-hidden />
+                  <Check className="h-4 w-4 text-brand-orange" aria-hidden />
                   {chip}
                 </span>
               ))}
