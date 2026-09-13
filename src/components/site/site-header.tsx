@@ -6,7 +6,7 @@ import { NAV_LINKS } from "@/lib/site-content";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-brand-sand/60 bg-brand-cream/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
         <Link href="/" aria-label="Belsalameh home" className="flex items-center">
           <Wordmark tone="dark" className="h-9 w-auto sm:h-10" />
         </Link>
