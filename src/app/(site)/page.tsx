@@ -63,7 +63,7 @@ export default function LandingPage() {
         />
         <AnimatedSky variant="gold" />
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 sm:pb-28 sm:pt-24">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20">
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-purple">
               <Plane className="h-3.5 w-3.5" aria-hidden />
@@ -84,9 +84,9 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <p className="mt-5 text-sm text-ink-subtle">{SITE.hero.microcopy}</p>
+            <p className="mt-4 text-sm text-ink-subtle">{SITE.hero.microcopy}</p>
 
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {["1–4 kg excess covered", "Bags up to 27 kg", "Pay at the counter"].map((chip) => (
                 <span
                   key={chip}
