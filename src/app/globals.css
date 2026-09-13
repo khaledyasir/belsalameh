@@ -46,6 +46,10 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* Root bump for readability: every Tailwind text-* / spacing-* utility
+       is rem-based, so this scales the whole site's type (and, proportionally,
+       padding/gaps/icons) up ~12% instead of hand-editing every className. */
+    font-size: 18px;
   }
   body {
     background-color: rgb(var(--canvas));
