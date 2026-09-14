@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ShieldCheck, Ban, RefreshCcwDot, MailCheck, Plane, Check, Sparkles } from "lucide-react";
 import { JoinTrigger } from "@/components/site/join";
@@ -165,18 +166,46 @@ export default function LandingPage() {
           </Reveal>
 
           <Reveal delay={80} className="relative z-10 mt-8 overflow-hidden rounded-2xl border border-border bg-surface shadow-pop">
-            {/* Soft accent glow — pure CSS, clipped by overflow-hidden. No image request. */}
+            {/* Depth — two soft CSS glows, clipped by overflow-hidden. No image request. */}
             <div aria-hidden className="pointer-events-none absolute -end-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
+            <div aria-hidden className="pointer-events-none absolute -start-16 -bottom-16 h-56 w-56 rounded-full bg-primary/5 blur-3xl" />
 
-            <div className="relative p-6 sm:p-8">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-caption font-semibold uppercase tracking-wide text-primary-ink">
-                <Plane className="h-3.5 w-3.5" aria-hidden />
-                Launch service · {PARTNER} only
-              </span>
-              <h3 className="mt-4 font-display text-heading-1 font-bold text-ink">{SITE.service.name}</h3>
-              <p className="mt-1 text-body-sm text-ink-muted">{SITE.service.eligibility}</p>
+            <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.3fr_1fr] lg:gap-10">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-caption font-semibold uppercase tracking-wide text-primary-ink">
+                  <Plane className="h-3.5 w-3.5" aria-hidden />
+                  Launch service · {PARTNER} only
+                </span>
+                <h3 className="mt-4 font-display text-heading-1 font-bold text-ink">{SITE.service.name}</h3>
+                <p className="mt-1 text-body-sm text-ink-muted">{SITE.service.eligibility}</p>
+                <p className="mt-6 text-body-lg text-ink-muted">{SITE.service.body}</p>
+              </div>
 
-              <p className="mt-6 text-body-lg text-ink-muted">{SITE.service.body}</p>
+              {/* "At a glance" range panel — a static echo of the weight simulator
+                  above, same gradient technique, no slider/state needed here. */}
+              <div className="rounded-xl border border-border bg-surface-muted p-5 lg:self-start">
+                <p className="text-caption font-semibold uppercase tracking-wide text-ink-subtle">
+                  Your bag, at a glance
+                </p>
+                <div
+                  aria-hidden
+                  className="mt-4 h-2 rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(to right, rgb(var(--border)) 0%, rgb(var(--border)) 30%, rgb(var(--accent)) 30%, rgb(var(--accent)) 70%, rgb(var(--border)) 70%, rgb(var(--border)) 100%)",
+                  }}
+                />
+                <div className="mt-1.5 flex justify-between font-mono text-caption text-ink-subtle">
+                  <span>20</span>
+                  <span>23</span>
+                  <span>27</span>
+                  <span>30 kg</span>
+                </div>
+                <p className="mt-4 text-body-sm text-ink-muted">
+                  <span className="font-semibold text-accent-ink">1–4 kg</span> over the standard allowance is
+                  covered — capped at 27 kg total.
+                </p>
+              </div>
             </div>
 
             {/* Torn-ticket seam — the description above is the "service", the
@@ -185,13 +214,17 @@ export default function LandingPage() {
 
             <div className="relative p-6 pt-6 sm:p-8 sm:pt-6">
               <p className="text-caption font-semibold uppercase tracking-wide text-ink-subtle">What&apos;s included</p>
-              <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                 {SITE.service.points.map((pt, i) => (
-                  <li key={pt} className="flex gap-3">
+                  <li
+                    key={pt}
+                    className="stagger-item flex gap-3 rounded-lg p-2 transition duration-base ease-premium hover:bg-surface-muted"
+                    style={{ "--stagger-i": i } as unknown as CSSProperties}
+                  >
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-accent/40 bg-accent/10 font-mono text-caption font-bold text-accent-ink">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="text-body text-ink-muted">{pt}</span>
+                    <span className="pt-0.5 text-body text-ink-muted">{pt}</span>
                   </li>
                 ))}
               </ul>

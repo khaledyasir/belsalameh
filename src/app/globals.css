@@ -115,6 +115,20 @@
   transform: translateY(0);
 }
 
+/* Staggered children inside a .reveal (e.g. a checklist) — one IntersectionObserver
+   (the parent's) drives all of them; each child just offsets its own transition via
+   --stagger-i. Same "invisible only once JS is actually running" rule as .reveal. */
+.motion-ready .reveal .stagger-item {
+  opacity: 0;
+  transform: translateY(0.5rem);
+}
+.motion-ready .reveal.is-visible .stagger-item {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--dur-slow) var(--ease-premium), transform var(--dur-slow) var(--ease-premium);
+  transition-delay: calc(var(--stagger-i, 0) * 60ms);
+}
+
 /* Weight simulator / eligibility checker range input (WeightSimulator,
    EligibilityChecker). Track colour comes from an inline gradient (the three
    weight bands); only the thumb + track shape are styled here. */
