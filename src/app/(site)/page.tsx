@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, Ban, RefreshCcwDot, MailCheck, Plane, Check } from "lucide-react";
+import { ShieldCheck, Ban, RefreshCcwDot, MailCheck, Plane, Check, Sparkles } from "lucide-react";
 import { JoinTrigger } from "@/components/site/join";
 import { AnimatedSky } from "@/components/site/animated-sky";
 import { FaqAccordion } from "@/components/site/faq-accordion";
@@ -10,7 +10,7 @@ import { LuggageTagVisual } from "@/components/site/luggage-tag-visual";
 import { TicketDivider } from "@/components/site/ticket-divider";
 import { Container } from "@/components/ui/container";
 import { Reveal } from "@/components/ui/reveal";
-import { SITE, PARTNER } from "@/lib/site-content";
+import { SITE, PARTNER, EARLY_BIRD_DATE } from "@/lib/site-content";
 
 const PRIMARY_PILL =
   "inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-body-sm font-semibold text-primary-ink shadow-sm transition duration-fast ease-premium hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -102,16 +102,20 @@ export default function LandingPage() {
         </Container>
 
         {/* Trust bar — a divider, not a new box */}
-        <Container className="relative z-10 flex flex-col items-center gap-3 border-t border-primary/10 pt-10 text-center">
+        <Container className="relative z-10 flex flex-col items-center gap-4 border-t border-primary/10 pt-10 text-center">
           <p className="text-caption font-semibold uppercase tracking-[0.18em] text-ink-subtle">
             In visionary partnership with
           </p>
-          <p className="font-display text-heading-1 font-bold text-ink">
+          <p className="flex items-center gap-2 font-display text-heading-1 font-bold text-ink">
+            <Plane className="h-6 w-6 shrink-0 -rotate-45 text-accent" aria-hidden />
             {PARTNER} <span className="text-body-sm font-medium text-ink-muted">(Founding Partner)</span>
           </p>
-          <ul className="mt-1 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-body-sm text-ink-muted">
+          <ul className="mt-1 flex flex-wrap items-center justify-center gap-2">
             {SITE.trustBadges.map((b) => (
-              <li key={b} className="inline-flex items-center gap-1.5">
+              <li
+                key={b}
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-surface px-4 py-2 text-body-sm font-semibold text-ink shadow-sm"
+              >
                 <Check className="h-4 w-4 text-accent" aria-hidden />
                 {b}
               </li>
@@ -119,17 +123,24 @@ export default function LandingPage() {
           </ul>
         </Container>
 
-        {/* Early Bird banner */}
+        {/* Early Bird banner — a limited-time ticket stub, not a flat notice box */}
         <Container className="relative z-10 mt-10">
-          <div className="flex flex-col items-start gap-2 rounded-2xl border border-accent/40 bg-accent/10 p-5 sm:flex-row sm:items-center sm:gap-4">
-            <span className="rounded-full bg-accent px-3 py-1 text-caption font-bold uppercase tracking-wide text-accent-ink">
-              Early Bird
-            </span>
-            <div>
-              <p className="font-display text-heading-3 font-semibold text-ink">{SITE.earlyBird.title}</p>
-              <p className="mt-0.5 text-body-sm text-ink-muted">{SITE.earlyBird.body}</p>
+          <Reveal className="relative overflow-hidden rounded-2xl border-2 border-dashed border-accent/50 bg-gradient-to-br from-accent/15 via-accent/5 to-transparent p-5 sm:p-6">
+            <div aria-hidden className="pointer-events-none absolute -end-10 -top-10 h-32 w-32 rounded-full bg-accent/20 blur-3xl" />
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+              <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full bg-accent px-3.5 py-1.5 text-caption font-bold uppercase tracking-wide text-accent-ink">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden />
+                Early Bird
+              </span>
+              <div className="flex-1">
+                <p className="font-display text-heading-3 font-semibold text-ink">{SITE.earlyBird.title}</p>
+                <p className="mt-0.5 text-body-sm text-ink-muted">{SITE.earlyBird.body}</p>
+              </div>
+              <span className="shrink-0 self-start rounded-lg border border-accent/30 bg-surface/80 px-3 py-1.5 font-mono text-caption font-bold uppercase tracking-wide text-accent-ink sm:self-center">
+                Ends {EARLY_BIRD_DATE}
+              </span>
             </div>
-          </div>
+          </Reveal>
         </Container>
 
         {/* Interactive weight simulator */}
@@ -153,26 +164,40 @@ export default function LandingPage() {
             <p className="mt-4 text-body-lg text-ink-muted">{SITE.service.lead}</p>
           </Reveal>
 
-          <Reveal delay={80} className="relative z-10 mt-8 rounded-2xl border border-border bg-surface p-6 shadow-pop sm:p-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-caption font-semibold uppercase tracking-wide text-primary-ink">
-              <Plane className="h-3.5 w-3.5" aria-hidden />
-              Launch service · {PARTNER} only
-            </span>
-            <h3 className="mt-4 font-display text-heading-1 font-bold text-ink">{SITE.service.name}</h3>
-            <p className="mt-1 text-body-sm text-ink-muted">{SITE.service.eligibility}</p>
+          <Reveal delay={80} className="relative z-10 mt-8 overflow-hidden rounded-2xl border border-border bg-surface shadow-pop">
+            {/* Soft accent glow — pure CSS, clipped by overflow-hidden. No image request. */}
+            <div aria-hidden className="pointer-events-none absolute -end-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
 
-            <p className="mt-6 text-body-lg text-ink-muted">{SITE.service.body}</p>
+            <div className="relative p-6 sm:p-8">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-caption font-semibold uppercase tracking-wide text-primary-ink">
+                <Plane className="h-3.5 w-3.5" aria-hidden />
+                Launch service · {PARTNER} only
+              </span>
+              <h3 className="mt-4 font-display text-heading-1 font-bold text-ink">{SITE.service.name}</h3>
+              <p className="mt-1 text-body-sm text-ink-muted">{SITE.service.eligibility}</p>
 
-            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-              {SITE.service.points.map((pt) => (
-                <li key={pt} className="flex gap-2 text-body text-ink-muted">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-                  {pt}
-                </li>
-              ))}
-            </ul>
+              <p className="mt-6 text-body-lg text-ink-muted">{SITE.service.body}</p>
+            </div>
 
-            <p className="mt-6 border-t border-border pt-4 text-caption text-ink-subtle">{SITE.service.ratesNote}</p>
+            {/* Torn-ticket seam — the description above is the "service", the
+                checklist below reads like the boarding stub's fine print. */}
+            <div aria-hidden className="h-2 bsl-perforation text-border" />
+
+            <div className="relative p-6 pt-6 sm:p-8 sm:pt-6">
+              <p className="text-caption font-semibold uppercase tracking-wide text-ink-subtle">What&apos;s included</p>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+                {SITE.service.points.map((pt, i) => (
+                  <li key={pt} className="flex gap-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-accent/40 bg-accent/10 font-mono text-caption font-bold text-accent-ink">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-body text-ink-muted">{pt}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="mt-6 border-t border-border pt-4 text-caption text-ink-subtle">{SITE.service.ratesNote}</p>
+            </div>
           </Reveal>
         </Container>
 
