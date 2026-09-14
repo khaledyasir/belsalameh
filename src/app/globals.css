@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Semantic design tokens.
+ * Values derive from `Belsalameh Brand Guidelines.pdf`
+ * (#2E3A6E #6D5FA3 #B48DBF #F7A663 #FADCA8 #FFF3E0).
+ *
+ * Format is "R G B" so Tailwind's `<alpha-value>` slash syntax works
+ * (e.g. `bg-primary/10`). Re-skin the whole platform from this block in
+ * Phase 5 — nothing else hard-codes brand colours.
+ */
+:root {
+  --canvas: 247 247 251;
+  --surface: 255 255 255;
+  --surface-muted: 243 243 248;
+  --border: 225 226 235;
+
+  --ink: 30 37 66; /* near brand indigo, tuned for body contrast (~13:1 on white) */
+  --ink-muted: 84 92 124;
+  --ink-subtle: 128 134 158;
+
+  --primary: 46 58 110; /* brand indigo */
+  --primary-ink: 255 255 255;
+
+  --accent: 247 166 99; /* brand orange — decorative / large only; pair with --primary text */
+  --accent-ink: 46 58 110;
+
+  --success: 21 122 74;
+  --warning: 247 166 99;
+  --danger: 193 45 45;
+  --info: 109 95 163; /* brand purple */
+
+  /*
+   * Section rhythm. Fluid so the gap between sections scales with viewport
+   * instead of jumping at breakpoints. Consumed as Tailwind spacing tokens
+   * (py-section-sm/md/lg) — see tailwind.config.ts.
+   */
+  --space-section-sm: clamp(2.5rem, 2rem + 2vw, 4rem);
+  --space-section-md: clamp(4rem, 3rem + 4vw, 6.5rem);
+  --space-section-lg: clamp(5.5rem, 4rem + 6vw, 9rem);
+
+  /*
+   * Motion. One easing curve, three durations. Reused by every later
+   * sub-project's transitions/animations instead of ad-hoc timing values.
+   * Neutralised globally under prefers-reduced-motion below.
+   */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 400ms;
+  --dur-slow: 700ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Root bump for readability: every Tailwind text-* / spacing-* utility
+       is rem-based, so this scales the whole site's type (and, proportionally,
+       padding/gaps/icons) up ~12% instead of hand-editing every className. */
+    font-size: 18px;
+  }
+  body {
+    background-color: rgb(var(--canvas));
+    color: rgb(var(--ink));
+    font-family: theme("fontFamily.sans");
+  }
+  *,
+  *::before,
+  *::after {
+    border-color: rgb(var(--border));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+  }
+  h1, h2, h3, h4 {
+    font-family: theme("fontFamily.display");
+  }
+}
+
+/* Animated sky — decorative drifting airplane layers (AnimatedSky component).
+   Each layer travels exactly one tile width (--bsl-drift) so the loop is seamless.
+   Frozen automatically under the prefers-reduced-motion block above. */
+@keyframes bsl-drift {
+  to {
+    background-position-x: var(--bsl-drift, 600px);
+  }
+}
+
+/*
+ * Scroll-reveal primitive (`useReveal` hook, src/lib/hooks/use-reveal.ts).
+ * Gated behind `.motion-ready` (set by a beforeInteractive script in the root
+ * layout) so content stays visible by default — with JS disabled, or before
+ * hydration, nothing is ever hidden waiting on an animation that won't run.
+ */
+.motion-ready .reveal {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity var(--dur-slow) var(--ease-premium), transform var(--dur-slow) var(--ease-premium);
+}
+
+.motion-ready .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Weight simulator / eligibility checker range input (WeightSimulator,
+   EligibilityChecker). Track colour comes from an inline gradient (the three
+   weight bands); only the thumb + track shape are styled here. */
+.bsl-weight-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 0.5rem;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+.bsl-weight-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  background: rgb(var(--primary));
+  border: 3px solid rgb(var(--surface));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  transition: transform var(--dur-fast) var(--ease-premium);
+}
+.bsl-weight-slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.bsl-weight-slider::-moz-range-thumb {
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  background: rgb(var(--primary));
+  border: 3px solid rgb(var(--surface));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+}
+.bsl-weight-slider::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+/* Grain overlay — subtle film-grain texture for atmosphere on large hero/dark
+   sections. Pure CSS (SVG turbulence data-URI), no image request. */
+.bsl-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* Ticket-perforation divider between sections — a row of "punched" circles,
+   standing in for the wave/straight-edge seam most sites default to. Colour
+   is set by the consumer via `color` (currentColor). */
+.bsl-perforation {
+  background-image: radial-gradient(circle, currentColor 1.5px, transparent 1.6px);
+  background-size: 16px 100%;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+/* Route line — a dashed vertical thread connecting the hero/service blocks
+   so they read as one journey instead of stacked boxes. Pure CSS: a static
+   dashed line by default, progressively enhanced to "draw itself" via native
+   CSS scroll-driven animation where supported (zero JS either way — see
+   MDN "animation-timeline: view()"). Decorative only, hidden on mobile where
+   there's no side gutter to place it in without crowding content. */
+.bsl-route-line {
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, rgb(var(--accent)) 0 6px, transparent 6px 16px);
+  transform-origin: top;
+}
+@supports (animation-timeline: view()) {
+  .bsl-route-line {
+    animation: bsl-route-grow linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 70%;
+  }
+}
+@keyframes bsl-route-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Decorative barcode-style stripes on the hero luggage tag — purely
+   ornamental (not a real/scannable code), evokes a baggage tag's printed
+   pattern. */
+.bsl-barcode {
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentColor 0,
+    currentColor 2px,
+    transparent 2px,
+    transparent 5px,
+    currentColor 5px,
+    currentColor 6px,
+    transparent 6px,
+    transparent 10px,
+    currentColor 10px,
+    currentColor 13px,
+    transparent 13px,
+    transparent 16px
+  );
+}
