@@ -4,7 +4,6 @@ import { JoinTrigger } from "@/components/site/join";
 import { AnimatedSky } from "@/components/site/animated-sky";
 import { FaqAccordion } from "@/components/site/faq-accordion";
 import { WeightSimulator } from "@/components/site/weight-simulator";
-import { EligibilityChecker } from "@/components/site/eligibility-checker";
 import { MembershipPass } from "@/components/site/membership-pass";
 import { LuggageTagVisual } from "@/components/site/luggage-tag-visual";
 import { TicketDivider } from "@/components/site/ticket-divider";
@@ -230,22 +229,8 @@ export default function LandingPage() {
 
       {/* ══════════ Zone 3 — the rest of the journey, one soft canvas ══════════ */}
       <div className="relative bg-gradient-to-b from-brand-cream via-surface to-surface">
-        {/* Eligibility checker */}
-        <Container className="relative py-section-md">
-          <Reveal>
-            <BlockHeading
-              eyebrow="Not sure yet?"
-              heading="Check your eligibility"
-              lead="A quick guide to whether the launch service is likely to apply to your flight and bag."
-            />
-          </Reveal>
-          <Reveal className="mt-8">
-            <EligibilityChecker />
-          </Reveal>
-        </Container>
-
         {/* Benefits */}
-        <Container className="relative mt-4 pb-section-sm sm:mt-8">
+        <Container className="relative py-section-md">
           <Reveal>
             <h2 className="font-display text-display-2 font-bold text-ink">{SITE.benefits.heading}</h2>
           </Reveal>
