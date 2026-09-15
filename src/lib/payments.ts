@@ -56,10 +56,16 @@ export async function capturePayment(
   reference: string,
   opts: { providerRef?: string; rawResponse?: unknown } = {},
 ): Promise<CaptureResult> {
+  console.log(`[payment] capture requested — reference=${reference} providerRef=${opts.providerRef ?? "(none)"}`);
+
   const txn = await db.transaction.findUnique({ where: { reference }, include: { member: true } });
-  if (!txn) return { ok: false, reason: "not_found" };
+  if (!txn) {
+    console.warn(`[payment] capture failed — no transaction found for reference ${reference}`);
+    return { ok: false, reason: "not_found" };
+  }
 
   if (txn.status === "CAPTURED" && txn.member) {
+    console.log(`[payment] reference ${reference} already captured — membership ${txn.member.membershipId} (no duplicate emails sent)`);
     return {
       ok: true,
       alreadyProcessed: true,
@@ -133,6 +139,8 @@ export async function capturePayment(
 
     return { member: created, proofLogId: proofLog.id, notifyLogId: notifyLog.id };
   });
+
+  console.log(`[payment] captured — reference=${reference} membership=${member.membershipId} amount=${txn.amountMinor} ${txn.currency}`);
 
   // Payment is already captured — a failed send must never surface as an error.
   try {

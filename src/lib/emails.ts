@@ -20,7 +20,12 @@ function parseAddress(v: string): { email: string; name?: string } {
 }
 
 export async function sendEmail({ to, subject, text, html }: Mail): Promise<SendResult> {
-  if (!EMAILS_ENABLED) return { ok: false, error: "email disabled" };
+  if (!EMAILS_ENABLED) {
+    // Most common cause of "no email" support questions — log it plainly so
+    // it shows up in logs\out.log instead of needing a DB query to explain.
+    console.log(`[email] skipped (EMAILS_ENABLED is off, or no SENDGRID_API_KEY) — would have sent to ${to}: "${subject}"`);
+    return { ok: false, error: "email disabled" };
+  }
   try {
     const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
@@ -40,10 +45,20 @@ export async function sendEmail({ to, subject, text, html }: Mail): Promise<Send
         ],
       }),
     });
-    if (res.ok) return { ok: true, messageId: res.headers.get("x-message-id") ?? undefined };
-    return { ok: false, error: `sendgrid ${res.status}: ${(await res.text()).slice(0, 300)}` };
+    if (res.ok) {
+      const messageId = res.headers.get("x-message-id") ?? undefined;
+      console.log(`[email] sent to ${to}: "${subject}" — SendGrid ${res.status}, message-id=${messageId ?? "(none)"}`);
+      return { ok: true, messageId };
+    }
+    // Full SendGrid response body to the log (truncated only in what we store
+    // in the DB, below) — this is "what the email server gets" when it rejects.
+    const body = await res.text();
+    console.error(`[email] FAILED to ${to}: "${subject}" — SendGrid responded ${res.status}: ${body.slice(0, 800)}`);
+    return { ok: false, error: `sendgrid ${res.status}: ${body.slice(0, 300)}` };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error(`[email] FAILED to ${to}: "${subject}" — request to SendGrid never completed: ${msg}`);
+    return { ok: false, error: msg };
   }
 }
 
@@ -141,7 +156,12 @@ export async function deliverMembershipEmails(input: {
   capturedAt: Date;
 }): Promise<void> {
   // Email off / no key: leave both log rows "queued" for a later manual resend.
-  if (!EMAILS_ENABLED) return;
+  if (!EMAILS_ENABLED) {
+    console.log(`[email] EMAILS_ENABLED is off — leaving both emails "queued" for membership ${input.member.membershipId} (reference ${input.member.reference})`);
+    return;
+  }
+
+  console.log(`[email] delivering membership emails for ${input.member.membershipId} (reference ${input.member.reference}, to ${input.member.email})`);
 
   const [customer, company] = await Promise.all([
     sendEmail(memberConfirmation(input.member)),
@@ -159,7 +179,12 @@ export async function deliverMembershipEmails(input: {
     db.emailLog.update({ where: { id: input.notifyLogId }, data: patch(company) }).catch(() => {}),
   ]);
 
-  if (!customer.ok || !company.ok) {
-    console.warn("[emails] membership delivery:", { customer: customer.error, company: company.error });
+  if (customer.ok && company.ok) {
+    console.log(`[email] both sent OK for ${input.member.membershipId}`);
+  } else {
+    console.warn(`[email] delivery had failures for ${input.member.membershipId}:`, {
+      customer: customer.ok ? "ok" : customer.error,
+      company: company.ok ? "ok" : company.error,
+    });
   }
 }
