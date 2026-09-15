@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Instagram } from "lucide-react";
 import { Wordmark } from "@/components/wordmark";
 import { SITE, CONTACT_EMAIL } from "@/lib/site-content";
+
+const INSTAGRAM_URL = "https://www.instagram.com/blsalameh/";
 
 const EXPLORE = [
   { label: "How it works", href: "/#how-it-works" },
@@ -11,7 +14,7 @@ const EXPLORE = [
 export function SiteFooter() {
   return (
     <footer className="bg-brand-indigo text-brand-cream/80">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 text-sm sm:grid-cols-2 sm:px-6 lg:grid-cols-5">
         <div>
           <Wordmark tone="light" className="h-10 w-auto" />
           <p className="mt-3 font-display text-base text-brand-cream">{SITE.footer.tagline}</p>
@@ -50,6 +53,19 @@ export function SiteFooter() {
           <p className="font-medium text-white">Help</p>
           <a href={`mailto:${CONTACT_EMAIL}`} className="mt-2 block hover:text-white hover:underline">
             {CONTACT_EMAIL}
+          </a>
+        </div>
+
+        <div>
+          <p className="font-medium text-white">Follow Us</p>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 hover:text-white hover:underline"
+          >
+            <Instagram className="h-4 w-4" aria-hidden />
+            Instagram
           </a>
         </div>
       </div>

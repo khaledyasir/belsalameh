@@ -14,6 +14,44 @@ const ORANGE_PILL =
 
 const BENEFIT_ICONS = [ShieldCheck, Ban, RefreshCcwDot, MailCheck];
 
+function BaggageTag() {
+  return (
+    <div className="relative mx-auto w-full max-w-[280px] rotate-[-3deg] rounded-2xl border border-brand-indigo/10 bg-white p-6 pt-8 shadow-pop transition-transform duration-300 ease-out hover:rotate-0 hover:scale-[1.02]">
+      <span
+        aria-hidden
+        className="absolute left-1/2 top-3 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-brand-purple/50"
+      />
+      <p className="text-center text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+        Belsalameh · Baggage Tag
+      </p>
+      <div className="mt-3 flex items-baseline justify-center gap-2">
+        <span className="font-display text-4xl font-bold text-brand-indigo">23</span>
+        <span className="text-xl text-ink-subtle" aria-hidden>
+          →
+        </span>
+        <span className="font-display text-4xl font-bold text-brand-orange">27</span>
+        <span className="text-sm font-semibold text-ink-subtle">KG</span>
+      </div>
+      <p className="mt-1 text-center text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+        Member Range · Protected Rate
+      </p>
+      <div className="mt-5 border-t border-dashed border-brand-indigo/25" />
+      <div
+        aria-hidden
+        className="mt-5 h-9 w-full"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(90deg, rgb(var(--primary)) 0 3px, transparent 3px 6px, rgb(var(--primary)) 6px 7px, transparent 7px 13px, rgb(var(--primary)) 13px 17px, transparent 17px 21px, rgb(var(--primary)) 21px 22px, transparent 22px 27px)",
+        }}
+      />
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-indigo">
+        <Plane className="h-3.5 w-3.5 text-brand-orange" aria-hidden />
+        Partner: {PARTNER}
+      </p>
+    </div>
+  );
+}
+
 function WeightBand({
   range,
   title,
@@ -63,7 +101,7 @@ export default function LandingPage() {
         />
         <AnimatedSky variant="gold" />
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20">
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.15fr_0.85fr] lg:gap-8">
           <div className="max-w-3xl">
             <p className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-purple">
               <Plane className="h-3.5 w-3.5" aria-hidden />
@@ -97,6 +135,10 @@ export default function LandingPage() {
                 </span>
               ))}
             </div>
+          </div>
+
+          <div aria-hidden className="hidden lg:block">
+            <BaggageTag />
           </div>
         </div>
 
@@ -207,25 +249,31 @@ export default function LandingPage() {
       </section>
 
       {/* ── Benefits ────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <h2 className="font-display text-3xl font-bold text-brand-indigo">{SITE.benefits.heading}</h2>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-10">
           {SITE.benefits.items.map((it, i) => {
             const Icon = BENEFIT_ICONS[i] ?? ShieldCheck;
+            const isLast = i === SITE.benefits.items.length - 1;
             return (
-              <div
-                key={it.title}
-                className="rounded-2xl border border-brand-sand/70 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-orange/15 text-brand-orange">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-lg font-semibold text-brand-indigo">{it.title}</h3>
-                <p className="mt-2 text-base leading-relaxed text-ink-muted">{it.body}</p>
-              </div>
+              <li key={it.title} className="flex gap-5">
+                <div className="flex flex-col items-center">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-orange/15 text-brand-orange">
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  {!isLast && <span aria-hidden className="mt-1 w-px flex-1 bg-brand-purple/25" />}
+                </div>
+                <div className={isLast ? "pb-1" : "pb-9"}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-orange">
+                    Gate {String(i + 1).padStart(2, "0")}
+                  </p>
+                  <h3 className="mt-1 font-display text-lg font-semibold text-brand-indigo">{it.title}</h3>
+                  <p className="mt-1.5 text-base leading-relaxed text-ink-muted">{it.body}</p>
+                </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       </section>
 
       {/* ── How it works ───────────────────────────────────── */}
