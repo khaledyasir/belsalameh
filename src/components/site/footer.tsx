@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CONTACT_EMAIL } from "@/lib/site-content";
 
 export function Footer() {
@@ -14,13 +15,13 @@ export function Footer() {
           <p className="footer__col-title">Explore</p>
           <ul className="footer__links">
             <li>
-              <a href="#how-it-works">How It Works</a>
+              <Link href="/#how-it-works">How It Works</Link>
             </li>
             <li>
-              <a href="#member-services">Member Services</a>
+              <Link href="/#member-services">Member Services</Link>
             </li>
             <li>
-              <a href="#faq">FAQ</a>
+              <Link href="/#faq">FAQ</Link>
             </li>
           </ul>
         </div>
@@ -29,10 +30,10 @@ export function Footer() {
           <p className="footer__col-title">Legal</p>
           <ul className="footer__links">
             <li>
-              <a href="/legal/terms">Terms &amp; Conditions</a>
+              <Link href="/legal/terms">Terms &amp; Conditions</Link>
             </li>
             <li>
-              <a href="/legal/privacy">Privacy Policy</a>
+              <Link href="/legal/privacy">Privacy Policy</Link>
             </li>
           </ul>
         </div>
