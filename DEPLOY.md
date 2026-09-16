@@ -51,6 +51,8 @@ Two ways to deploy:
    SENDGRID_API_KEY="<key>"
    EMAILS_ENABLED="true"
    PUBLIC_SITE_ENABLED="true"
+   PAYMENTS_LIVE="false"
+   ALLOW_SIMULATED_PAYMENT="false"
    ADMIN_USERNAME="admin"
    ADMIN_PASSWORD="<first admin password>"
    ADMIN_EMAIL="admin@belsalameh.com"

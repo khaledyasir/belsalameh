@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ALLOW_SIMULATED_PAYMENT } from "@/lib/config";
+import { confirmSimulatedPayment } from "../actions";
 
 export const metadata: Metadata = { title: "Redirecting to payment" };
 
@@ -29,6 +31,26 @@ export default async function ProcessingPage({
         <p className="mt-3 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
           That order reference could not be found.
         </p>
+      )}
+
+      {ALLOW_SIMULATED_PAYMENT && ref && (
+        <div className="mt-8 rounded-lg border border-warning/40 bg-warning/10 p-4 text-left text-sm text-[#7a4d0f]">
+          <p className="font-medium">Payment gateway not connected yet (Phase 3)</p>
+          <p className="mt-1">
+            Use the button below to record a successful payment. It writes the
+            transaction and creates the membership in the database. It is the same
+            thing the MEPS webhook will do.
+          </p>
+          <form action={confirmSimulatedPayment} className="mt-3">
+            <input type="hidden" name="ref" value={ref} />
+            <button
+              type="submit"
+              className="rounded-full bg-brand-indigo px-4 py-2 text-sm font-semibold text-white hover:bg-brand-indigo/90"
+            >
+              Record successful payment
+            </button>
+          </form>
+        </div>
       )}
 
       <div className="mt-6">
