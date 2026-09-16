@@ -3,6 +3,7 @@ import { db } from "./db";
 import { EMAILS_ENABLED, EMAIL_FROM, EMAIL_COMPANY_NOTIFY } from "./config";
 import { CONTACT_EMAIL } from "./site-content";
 import { formatExpiry, formatMoney, formatDateTime } from "./format";
+import { emailDebug, emailLogPath } from "./email-debug";
 
 /**
  * Transactional email via the SendGrid v3 HTTP API (no SMTP, no SDK).
@@ -20,7 +21,25 @@ function parseAddress(v: string): { email: string; name?: string } {
 }
 
 export async function sendEmail({ to, subject, text, html }: Mail): Promise<SendResult> {
-  if (!EMAILS_ENABLED) return { ok: false, error: "email disabled" };
+  const from = parseAddress(EMAIL_FROM);
+  await emailDebug("send.started", {
+    to,
+    subject,
+    from: from.email,
+    replyTo: CONTACT_EMAIL,
+    enabled: EMAILS_ENABLED,
+    apiKeyPresent: Boolean(process.env.SENDGRID_API_KEY),
+    textLength: text.length,
+    htmlIncluded: Boolean(html),
+  });
+
+  if (!EMAILS_ENABLED) {
+    await emailDebug("send.skipped", {
+      to,
+      reason: "EMAILS_ENABLED must be true and SENDGRID_API_KEY must be set",
+    });
+    return { ok: false, error: "email disabled" };
+  }
   try {
     const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
@@ -30,7 +49,7 @@ export async function sendEmail({ to, subject, text, html }: Mail): Promise<Send
       },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: to }] }],
-        from: parseAddress(EMAIL_FROM),
+        from,
         reply_to: { email: CONTACT_EMAIL },
         subject,
         // SendGrid requires text/plain before text/html.
@@ -40,10 +59,20 @@ export async function sendEmail({ to, subject, text, html }: Mail): Promise<Send
         ],
       }),
     });
-    if (res.ok) return { ok: true, messageId: res.headers.get("x-message-id") ?? undefined };
-    return { ok: false, error: `sendgrid ${res.status}: ${(await res.text()).slice(0, 300)}` };
+    const messageId = res.headers.get("x-message-id") ?? undefined;
+    if (res.ok) {
+      await emailDebug("send.succeeded", { to, status: res.status, messageId });
+      return { ok: true, messageId };
+    }
+
+    const responseBody = (await res.text()).slice(0, 1000);
+    const error = `sendgrid ${res.status}: ${responseBody}`;
+    await emailDebug("send.failed", { to, status: res.status, statusText: res.statusText, messageId, responseBody });
+    return { ok: false, error };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    const error = e instanceof Error ? e.message : String(e);
+    await emailDebug("send.exception", { to, error: e });
+    return { ok: false, error };
   }
 }
 
@@ -140,8 +169,24 @@ export async function deliverMembershipEmails(input: {
   providerRef: string | null;
   capturedAt: Date;
 }): Promise<void> {
+  await emailDebug("delivery.started", {
+    proofLogId: input.proofLogId,
+    notifyLogId: input.notifyLogId,
+    memberEmail: input.member.email,
+    companyEmail: EMAIL_COMPANY_NOTIFY,
+    membershipId: input.member.membershipId,
+    reference: input.member.reference,
+    enabled: EMAILS_ENABLED,
+    logFile: emailLogPath(),
+  });
+
   // Email off / no key: leave both log rows "queued" for a later manual resend.
-  if (!EMAILS_ENABLED) return;
+  if (!EMAILS_ENABLED) {
+    await emailDebug("delivery.skipped", {
+      reason: "EMAILS_ENABLED must be true and SENDGRID_API_KEY must be set; email database rows remain queued",
+    });
+    return;
+  }
 
   const [customer, company] = await Promise.all([
     sendEmail(memberConfirmation(input.member)),
@@ -154,12 +199,21 @@ export async function deliverMembershipEmails(input: {
     error: r.ok ? null : (r.error ?? "unknown").slice(0, 400),
   });
 
-  await Promise.all([
-    db.emailLog.update({ where: { id: input.proofLogId }, data: patch(customer) }).catch(() => {}),
-    db.emailLog.update({ where: { id: input.notifyLogId }, data: patch(company) }).catch(() => {}),
+  const updates = await Promise.allSettled([
+    db.emailLog.update({ where: { id: input.proofLogId }, data: patch(customer) }),
+    db.emailLog.update({ where: { id: input.notifyLogId }, data: patch(company) }),
   ]);
+  await emailDebug("delivery.database-status-updated", {
+    proof: updates[0].status,
+    notify: updates[1].status,
+    proofError: updates[0].status === "rejected" ? updates[0].reason : undefined,
+    notifyError: updates[1].status === "rejected" ? updates[1].reason : undefined,
+  });
 
   if (!customer.ok || !company.ok) {
     console.warn("[emails] membership delivery:", { customer: customer.error, company: company.error });
+    await emailDebug("delivery.completed-with-failures", { customer: customer.error, company: company.error });
+  } else {
+    await emailDebug("delivery.completed", { customerMessageId: customer.messageId, companyMessageId: company.messageId });
   }
 }

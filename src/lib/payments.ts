@@ -7,6 +7,7 @@ import { newMembershipId } from "./membership-id";
 import { formatExpiry } from "./format";
 import { deliverMembershipEmails } from "./emails";
 import { EMAIL_COMPANY_NOTIFY } from "./config";
+import { emailDebug } from "./email-debug";
 
 /**
  * Payment lifecycle. Both the manual "confirm" affordance on the hand-off page
@@ -56,10 +57,15 @@ export async function capturePayment(
   reference: string,
   opts: { providerRef?: string; rawResponse?: unknown } = {},
 ): Promise<CaptureResult> {
+  await emailDebug("payment-capture.started", { reference, providerRef: opts.providerRef ?? null });
   const txn = await db.transaction.findUnique({ where: { reference }, include: { member: true } });
-  if (!txn) return { ok: false, reason: "not_found" };
+  if (!txn) {
+    await emailDebug("payment-capture.not-found", { reference });
+    return { ok: false, reason: "not_found" };
+  }
 
   if (txn.status === "CAPTURED" && txn.member) {
+    await emailDebug("payment-capture.already-processed", { reference, membershipId: txn.member.membershipId });
     return {
       ok: true,
       alreadyProcessed: true,
@@ -133,6 +139,14 @@ export async function capturePayment(
 
     return { member: created, proofLogId: proofLog.id, notifyLogId: notifyLog.id };
   });
+  await emailDebug("payment-capture.email-logs-created", {
+    reference,
+    membershipId: member.membershipId,
+    proofLogId,
+    notifyLogId,
+    customerEmail: member.email,
+    companyEmail: EMAIL_COMPANY_NOTIFY,
+  });
 
   // Payment is already captured — a failed send must never surface as an error.
   try {
@@ -154,6 +168,7 @@ export async function capturePayment(
     });
   } catch (e) {
     console.warn("[capturePayment] email delivery threw:", e);
+    await emailDebug("payment-capture.delivery-exception", { reference, error: e });
   }
 
   return {

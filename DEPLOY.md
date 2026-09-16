@@ -61,6 +61,9 @@ Two ways to deploy:
    > `NEXT_PUBLIC_SITE_URL` is baked in at build time — if the real URL differs
    > from what the bundle was built with, rebuild the bundle with the right value.
    > Generate `AUTH_SECRET`: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
+   > Email delivery diagnostics are appended to `email-flow.log` in the app's
+   > working directory. If that directory is read-only, set `EMAIL_LOG_FILE` to
+   > a writable absolute path, for example `C:\\inetpub\\belsalameh\\email-flow.log`.
 
 4. **Create the schema** — a DBA runs `db\mssql-schema.sql` against the
    `belsalameh` database in SSMS (one file, creates every table).
