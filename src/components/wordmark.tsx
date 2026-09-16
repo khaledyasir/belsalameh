@@ -14,6 +14,7 @@ export function Wordmark({ className, tone = "light" }: { className?: string; to
       width={524}
       height={284}
       priority
+      unoptimized
       className={cn("h-9 w-auto", className)}
     />
   );
