@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getSession, signIn, signOut, requireSession } from "@/lib/auth";
+import { getSession, signIn, signOut, requireSession, refreshSession } from "@/lib/auth";
 import { audit, changePassword, updateProfile } from "@/lib/admin-store";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -60,6 +60,12 @@ export async function changePasswordAction(formData: FormData) {
   if (next !== confirm) redirect("/admin/account?password=mismatch");
 
   const ok = await changePassword(session.user.id, current, next);
-  if (ok) await audit("admin.password_changed", { actorId: session.user.id, entityId: session.user.id });
+  if (ok) {
+    // The password change just rotated the salt the session cookie is bound
+    // to - refresh it now or the very next request (this redirect included)
+    // would reject the caller's own now-stale cookie.
+    await refreshSession(session.user.id);
+    await audit("admin.password_changed", { actorId: session.user.id, entityId: session.user.id });
+  }
   redirect(ok ? "/admin/account?password=ok" : "/admin/account?password=badcurrent");
 }

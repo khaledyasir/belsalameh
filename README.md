@@ -144,7 +144,7 @@ src/
     guard.ts             per-page auth gate
     checkout.ts          shared zod schema (client form + server action)
     membership.ts        product config (price/currency/duration — placeholder)
-    config.ts            GATEWAY_MODE, CONSENT_VERSION, PAYMENTS_LIVE
+    config.ts            GATEWAY_MODE, CONSENT_VERSION
     site-content.ts      all public copy (placeholder) + PUBLIC_SITE_ENABLED
     membership-id.ts     Membership ID generator (BSL-XXXX-XXXX)
     format.ts            money / date / expiry ("Month YYYY")

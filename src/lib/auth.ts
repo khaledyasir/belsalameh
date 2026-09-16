@@ -60,13 +60,7 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
-/** Returns true on success. */
-export async function signIn(username: string, password: string): Promise<boolean> {
-  const admin = await getAdminByUsername(username);
-  // Always run a KDF pass so timing doesn't reveal whether the username exists.
-  const ok = admin ? await verifyPassword(admin, password) : (await verifyDummy(password), false);
-  if (!admin || !ok) return false;
-
+async function setSessionCookie(admin: { id: string; passwordSalt: string }): Promise<void> {
   const store = await cookies();
   store.set(COOKIE, `${admin.id}.${sign(`${admin.id}.${admin.passwordSalt}`)}`, {
     httpOnly: true,
@@ -75,9 +69,31 @@ export async function signIn(username: string, password: string): Promise<boolea
     path: "/",
     maxAge: 60 * Number(process.env.AUTH_SESSION_TTL_MINUTES ?? 45),
   });
+}
+
+/** Returns true on success. */
+export async function signIn(username: string, password: string): Promise<boolean> {
+  const admin = await getAdminByUsername(username);
+  // Always run a KDF pass so timing doesn't reveal whether the username exists.
+  const ok = admin ? await verifyPassword(admin, password) : (await verifyDummy(password), false);
+  if (!admin || !ok) return false;
+
+  await setSessionCookie(admin);
   await recordLogin(admin.id).catch(() => {});
   await audit("admin.login", { actorId: admin.id, entityId: admin.id });
   return true;
+}
+
+/**
+ * Re-issues the session cookie against the admin's *current* salt. Call this
+ * right after a successful password change: the salt just rotated, which
+ * would otherwise make the caller's own cookie invalid on its very next
+ * request (the account page promises "you stay signed in" - this is what
+ * keeps that true, instead of the next page load rejecting a stale cookie).
+ */
+export async function refreshSession(adminId: string): Promise<void> {
+  const admin = await getAdminById(adminId);
+  if (admin) await setSessionCookie(admin);
 }
 
 export async function signOut(): Promise<void> {
