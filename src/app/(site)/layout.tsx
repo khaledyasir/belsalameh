@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/site/site-header";
-import { SiteFooter } from "@/components/site/site-footer";
+import { Navbar } from "@/components/site/navbar";
+import { Footer } from "@/components/site/footer";
 import { JoinProvider } from "@/components/site/join";
 import { siteEnabled } from "@/lib/site-content";
 
@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <JoinProvider>
-      <div className="flex min-h-dvh flex-col bg-surface">
-        <SiteHeader />
+      <div className="flex min-h-dvh flex-col">
+        <Navbar />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <Footer />
       </div>
     </JoinProvider>
   );
