@@ -50,7 +50,7 @@ export function Footer() {
           <p className="footer__col-title">Follow Us</p>
           <ul className="footer__links footer__social">
             <li>
-              <a href="https://www.instagram.com/blsalameh/" target="_blank" rel="noreferrer">
+              <a href="https://www.instagram.com/belsalameh/" target="_blank" rel="noreferrer">
                 Instagram
               </a>
             </li>

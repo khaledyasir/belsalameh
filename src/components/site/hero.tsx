@@ -18,7 +18,7 @@ export function Hero() {
           </a>
         </div>
         <p className="hero__microcopy">
-          Early-bird: <b>access through Dec 31, 2029 for $39</b>, then $39/year
+          Early-bird: <b>Access through Dec 31, 2029 for $39</b>, then $39/year
         </p>
       </div>
     </section>
