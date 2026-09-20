@@ -116,10 +116,6 @@
   margin: 0 0 10px;
 }
 
-.eyebrow--light {
-  color: var(--sand);
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -259,9 +255,14 @@
 
 /* ===== Hero ===== */
 .hero {
+  position: relative;
+  overflow: hidden;
   background:
-    radial-gradient(760px circle at 88% -12%, rgba(201, 162, 87, 0.18), transparent 60%),
-    radial-gradient(620px circle at -8% 108%, rgba(244, 239, 227, 0.06), transparent 60%),
+    radial-gradient(200px circle at 24% 28%, rgba(244, 239, 227, 0.16), transparent 70%),
+    radial-gradient(240px circle at 70% 78%, rgba(201, 162, 87, 0.2), transparent 70%),
+    radial-gradient(140px circle at 90% 55%, rgba(244, 239, 227, 0.12), transparent 70%),
+    radial-gradient(760px circle at 88% -12%, rgba(201, 162, 87, 0.24), transparent 60%),
+    radial-gradient(620px circle at -8% 108%, rgba(244, 239, 227, 0.08), transparent 60%),
     var(--navy);
   padding: 80px 0;
 }
