@@ -251,6 +251,22 @@
   .navbar__links {
     display: none;
   }
+
+  /* Logo hidden nav links leave the flex row with just the brand and the
+     CTA, which space-between shoves apart instead of centering. Take the
+     brand out of flow and center it on the bar itself; the CTA (now the
+     only flex child) settles against the right edge on its own. */
+  .navbar__inner {
+    position: relative;
+    justify-content: flex-end;
+  }
+
+  .navbar__brand {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* ===== Hero ===== */
