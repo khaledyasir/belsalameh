@@ -3,16 +3,16 @@ import { JoinTrigger } from "./join";
 const STEPS = [
   {
     title: "Join Belsalameh",
-    description: "Sign up online in a couple of minutes — no waiting for a flight to book.",
+    description: "Sign up online in a couple of minutes. No waiting for a flight to book.",
   },
   {
     title: "Show your membership proof",
     description:
-      "Present the confirmation email sent to your inbox at check-in when you need relief — subject to availability and airline policy.",
+      "Present the confirmation email sent to your inbox at check-in when you need relief, subject to availability and airline policy.",
   },
   {
     title: "Pay the member rate",
-    description: "Settled directly with the airline at the counter — no online payment, no refund worries.",
+    description: "Settled directly with the airline at the counter. No online payment, no refund worries.",
   },
 ];
 

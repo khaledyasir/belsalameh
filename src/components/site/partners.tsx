@@ -11,7 +11,7 @@ export function Partners() {
           <div className="partner-strip">
             <div className="plogo">
               <span className="plogo__name">Royal Jordanian</span>
-              <span className="plogo__tag">Baggage relief — live</span>
+              <span className="plogo__tag">Baggage relief · live</span>
             </div>
             <div className="plogo">
               <span className="plogo__name">More airlines</span>
@@ -39,7 +39,7 @@ export function Partners() {
           <div className="partner-card">
             <h3>Royal Jordanian</h3>
             <p>
-              Jordan&apos;s flagship carrier — an expanding fleet carrying the warmth of Levantine hospitality to
+              Jordan&apos;s flagship carrier, an expanding fleet carrying the warmth of Levantine hospitality to
               50+ destinations across four continents.
             </p>
             <div className="partner-card__actions">

@@ -20,7 +20,7 @@ export function Services() {
         <div className="section-head">
           <p className="eyebrow">What your membership unlocks</p>
           <h2>Relief for the moments that catch you off guard.</h2>
-          <p>Pay-per-use flat rates, paid directly to the airline at the check-in counter — a fraction of the standard fee.</p>
+          <p>Pay-per-use flat rates, paid directly to the airline at the check-in counter, for a fraction of the standard fee.</p>
         </div>
 
         <ol className="unlock-list">

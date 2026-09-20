@@ -5,14 +5,14 @@ export function Hero() {
     <section id="home" className="hero">
       <div className="hero__inner">
         <p className="eyebrow eyebrow--light">You&apos;re cleared for stress-free boarding</p>
-        <h1>Fly in relief — skip the surprises at the counter.</h1>
+        <h1>Fly in relief. Skip the surprises at the counter.</h1>
         <p className="hero__sub">
           Avoid heavy airport counter penalties and hand-luggage stress. Belsalameh unlocks exclusive airline
           perks, made only for members.
         </p>
-        <p className="hero__sub hero__sub--muted">Small perks, real savings — provided directly by our airline partners.</p>
+        <p className="hero__sub hero__sub--muted">Small perks, real savings, provided directly by our airline partners.</p>
         <div className="hero__cta-row">
-          <JoinTrigger className="btn btn--gold">Join Belsalameh — $39</JoinTrigger>
+          <JoinTrigger className="btn btn--gold">Join Belsalameh for $39</JoinTrigger>
           <a href="#services" className="btn btn--ghost">
             See how it works
           </a>
