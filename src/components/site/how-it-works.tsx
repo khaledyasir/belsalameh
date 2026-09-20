@@ -1,42 +1,42 @@
+import { JoinTrigger } from "./join";
+
 const STEPS = [
   {
-    number: 1,
-    title: "Enter Your Details & Pay",
-    description:
-      "Enter your full name (exactly as it appears on your passport) and your email address. Confirm your email and complete payment.",
+    title: "Join Belsalameh",
+    description: "Enter your name as it appears on your passport and your email. Confirm and pay.",
   },
   {
-    number: 2,
-    title: "Save Your Confirmation Email",
-    description:
-      "Once payment is successful, you will instantly receive an automated confirmation email. Keep this email saved on your phone as your official proof of membership for as long as it remains active. No logins or account creation required.",
+    title: "Save your confirmation email",
+    description: "It arrives instantly and is your only proof of membership — no login, no account.",
   },
   {
-    number: 3,
-    title: "Show Email at Check-In & Fly in Relief",
-    description:
-      "Arrive at the airport check-in counter as usual. If your luggage weighs up to 27 kg max (1 to 4 kg over standard allowance), show your confirmation email to the check-in agent to access unlisted member rates and pay directly at the counter.",
+    title: "Show it at check-in",
+    description: "If your bag is up to 27 kg, show the email to unlock your member rate at the counter.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="how">
-      <div className="how__inner">
-        <p className="eyebrow">The Process</p>
-        <h2>How It Works</h2>
+    <section id="how-it-works" className="section">
+      <div className="wrap">
+        <div className="section-head">
+          <p className="eyebrow">How it works</p>
+          <h2>Three simple steps.</h2>
+        </div>
         <ol className="steps">
-          {STEPS.map((step) => (
-            <li className="step" key={step.number}>
+          {STEPS.map((step, i) => (
+            <li className="step" key={step.title}>
               <span className="step__num" aria-hidden="true">
-                {step.number}
+                {i + 1}
               </span>
-              <span className="step__label">Step {step.number}</span>
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
+              <div>
+                <h4>{step.title}</h4>
+                <p>{step.description}</p>
+              </div>
             </li>
           ))}
         </ol>
+        <JoinTrigger className="btn btn--gold section-cta">Be a Member</JoinTrigger>
       </div>
     </section>
   );

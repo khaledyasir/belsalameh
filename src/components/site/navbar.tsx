@@ -2,13 +2,13 @@ import Link from "next/link";
 import { JoinTrigger } from "./join";
 
 // Prefixed with "/" so these work from any page, not just the homepage -
-// a bare "#home" only scrolls if you're already on / (nothing to scroll to
-// on /checkout, /faq, etc). "/#id" navigates to the homepage first.
+// a bare "#services" only scrolls if you're already on / (nothing to scroll
+// to on /checkout, /faq, etc). "/#id" navigates to the homepage first.
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
+  { label: "Services", href: "/#services" },
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "Member Services", href: "/#member-services" },
-  { label: "FAQ", href: "/#faq" },
+  { label: "Partners", href: "/#partners" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 export function Navbar() {
@@ -27,7 +27,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <JoinTrigger className="btn btn--pill navbar__cta">Activate Membership</JoinTrigger>
+        <JoinTrigger className="btn btn--gold btn--pill navbar__cta">Join</JoinTrigger>
       </div>
     </header>
   );
