@@ -1,26 +1,21 @@
 import type { Metadata } from "next";
-import { Crimson_Pro, Crimson_Text, Inter } from "next/font/google";
+import { Crimson_Text, Inter } from "next/font/google";
 import "./globals.css";
 
-// Brand display serif ("Crimson"). System serif covers the swap window on
-// slow networks (font-display: swap). Still used by /admin, /login, /faq,
-// /legal/* — only the landing page (below) moved to the new design's fonts.
-const display = Crimson_Pro({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-// Landing page redesign fonts — feed the --font-heading/--font-body custom
-// properties that the ported CSS (globals.css, "landing page" section) reads.
-const landingHeading = Crimson_Text({
+// Brand typeface per Guidlines pdfs/Belsalameh Brand Guidelines.pdf: "Crimson",
+// weights Regular/Semi bold/Bold — that's Google's Crimson Text, not Crimson
+// Pro (a different, unrelated family despite the similar name). Feeds
+// --font-heading, used by every heading site-wide (see tailwind.config.ts
+// fontFamily.display) and by the landing page's own heading rules.
+const heading = Crimson_Text({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   variable: "--font-heading",
   display: "swap",
 });
-const landingBody = Inter({
+
+// Body copy sans — feeds --font-body (tailwind.config.ts fontFamily.sans).
+const body = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
@@ -41,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${landingHeading.variable} ${landingBody.variable}`}>
+    <html lang="en" className={`${heading.variable} ${body.variable}`}>
       <body>{children}</body>
     </html>
   );

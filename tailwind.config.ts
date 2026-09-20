@@ -40,10 +40,16 @@ const config: Config = {
         info: "rgb(var(--info) / <alpha-value>)",
       },
       fontFamily: {
-        // "Crimson" (brand display serif) with a system-serif fallback so text
-        // is readable before the web font loads on slow networks.
-        display: ["var(--font-display)", "Georgia", "Cambria", "Times New Roman", "serif"],
-        sans: ["var(--font-sans)", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
+        // "Crimson" (brand display serif, per the brand guidelines PDF) with a
+        // system-serif fallback so text is readable before the web font loads
+        // on slow networks. --font-heading is Crimson Text (see layout.tsx) —
+        // it used to point at --font-display/Crimson Pro, a different,
+        // unrelated family despite the similar name.
+        display: ["var(--font-heading)", "Georgia", "Cambria", "Times New Roman", "serif"],
+        // --font-body (Inter) — was wired to a --font-sans variable that was
+        // never actually defined by any font loader, so this fell back to the
+        // browser default serif instead of Inter.
+        sans: ["var(--font-body)", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
       },
       borderRadius: {
         sm: "0.375rem",
