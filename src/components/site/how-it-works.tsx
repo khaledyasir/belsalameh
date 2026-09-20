@@ -3,15 +3,16 @@ import { JoinTrigger } from "./join";
 const STEPS = [
   {
     title: "Join Belsalameh",
-    description: "Enter your name as it appears on your passport and your email. Confirm and pay.",
+    description: "Sign up online in a couple of minutes — no waiting for a flight to book.",
   },
   {
-    title: "Save your confirmation email",
-    description: "It arrives instantly and is your only proof of membership — no login, no account.",
+    title: "Show your membership proof",
+    description:
+      "Present the confirmation email sent to your inbox at check-in when you need relief — subject to availability and airline policy.",
   },
   {
-    title: "Show it at check-in",
-    description: "If your bag is up to 27 kg, show the email to unlock your member rate at the counter.",
+    title: "Pay the member rate",
+    description: "Settled directly with the airline at the counter — no online payment, no refund worries.",
   },
 ];
 

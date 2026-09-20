@@ -8,7 +8,6 @@ export function Footer() {
       <div className="footer__inner">
         <div className="footer__brand-col">
           <img src="/logo-plane.png" alt="Belsalameh" className="footer__logo" />
-          <p className="footer__tagline">Fly in relief™</p>
         </div>
 
         <div className="footer__col">

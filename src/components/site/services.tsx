@@ -1,15 +1,15 @@
-const SERVICES = [
+const UNLOCKS = [
   {
-    title: "Protected Member Rate",
-    description: "Fixed pricing for 1–4 kg over your standard baggage allowance, agreed with the airline in advance.",
+    title: "Micro-Weight Relief",
+    description: "1–3 kg overweight at the counter? Pay the member rate and never leave belongings behind.",
   },
   {
-    title: "Pay at the Counter",
-    description: "No online booking or prepayment. Settle directly with the airline when you check in.",
+    title: "Carry-On Flexibility",
+    description: "Extended cabin-bag weight tolerance for smooth, hassle-free boarding.",
   },
   {
-    title: "Instant Confirmation",
-    description: "Your confirmation email is your membership proof — no app, no login, no card to carry.",
+    title: "Priority Bag Handling",
+    description: "Get your bag among the first off the carousel, provided by the airline.",
   },
 ];
 
@@ -19,21 +19,27 @@ export function Services() {
       <div className="wrap">
         <div className="section-head">
           <p className="eyebrow">What your membership unlocks</p>
-          <h2>Relief for the moment that catches you off guard.</h2>
-          <p>Pay-per-use flat rates, settled directly with the airline at check-in — a fraction of the standard fee.</p>
+          <h2>Relief for the moments that catch you off guard.</h2>
+          <p>Pay-per-use flat rates, paid directly to the airline at the check-in counter — a fraction of the standard fee.</p>
         </div>
 
-        <div className="grid3">
-          {SERVICES.map((service) => (
-            <div className="service-card" key={service.title}>
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-            </div>
+        <ol className="unlock-list">
+          {UNLOCKS.map((item, i) => (
+            <li className="unlock" key={item.title}>
+              <span className="unlock__badge" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="unlock__body">
+                <p className="eyebrow">Unlock {String(i + 1).padStart(2, "0")}</p>
+                <h3>{item.title}</h3>
+                <p className="unlock__desc">{item.description}</p>
+              </div>
+            </li>
           ))}
-        </div>
+        </ol>
 
         <a href="#partners" className="btn btn--outline section-cta">
-          See our partners
+          Discover availability &amp; rates
         </a>
       </div>
     </section>

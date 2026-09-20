@@ -262,6 +262,12 @@
   line-height: 1.55;
 }
 
+.hero__sub--muted {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: rgba(244, 239, 227, 0.6);
+}
+
 .hero__cta-row {
   margin-top: 30px;
   display: flex;
@@ -276,44 +282,69 @@
   color: rgba(244, 239, 227, 0.6);
 }
 
-.hero__dot {
-  margin: 0 8px;
-  opacity: 0.6;
+.hero__microcopy b {
+  color: var(--sand);
+  font-weight: 600;
 }
 
-/* ===== Services ===== */
-.grid3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
+/* ===== Services: connected numbered "unlock" list ===== */
+.unlock-list {
+  position: relative;
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+}
+
+.unlock-list::before {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
   background: var(--line);
-  border: 1px solid var(--line);
-  margin-top: 8px;
 }
 
-.service-card {
-  background: var(--paper);
-  padding: 28px 24px;
+.unlock {
+  position: relative;
+  display: flex;
+  gap: 24px;
+  padding: 18px 0;
 }
 
-.service-card h3 {
+.unlock__badge {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--navy);
+  color: var(--sand);
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  box-shadow: 0 0 0 4px var(--paper);
+}
+
+.unlock__body .eyebrow {
+  margin-bottom: 4px;
+}
+
+.unlock__body h3 {
   font-family: var(--font-heading);
   font-size: 1.1rem;
   color: var(--navy);
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
-.service-card p {
+.unlock__desc {
   font-size: 0.92rem;
   color: rgba(38, 36, 31, 0.68);
   line-height: 1.55;
   margin: 0;
-}
-
-@media (max-width: 760px) {
-  .grid3 {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ===== How it works ===== */
@@ -478,12 +509,6 @@
   max-width: 52ch;
 }
 
-.final-cta__tagline {
-  margin-top: 18px;
-  font-style: italic;
-  color: rgba(244, 239, 227, 0.6);
-}
-
 /* ===== Footer (unchanged from the previous design) ===== */
 .footer {
   background: var(--navy);
@@ -507,13 +532,6 @@
   height: 40px;
   width: auto;
   margin-bottom: 12px;
-}
-
-.footer__tagline {
-  font-family: var(--font-heading);
-  font-style: italic;
-  color: rgba(255, 243, 224, 0.75);
-  margin: 0;
 }
 
 .footer__col-title {

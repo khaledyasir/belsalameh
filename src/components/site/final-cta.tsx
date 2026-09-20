@@ -4,11 +4,9 @@ export function FinalCTA() {
   return (
     <section id="join" className="final-cta">
       <div className="wrap">
-        <p className="eyebrow eyebrow--light">Ready when you are</p>
         <h2>Ready to skip the counter stress?</h2>
-        <p className="final-cta__body">Join today and lock in Early Bird pricing through December 31, 2028.</p>
-        <JoinTrigger className="btn btn--gold section-cta">Activate Membership</JoinTrigger>
-        <p className="final-cta__tagline">Fly in relief™.</p>
+        <p className="final-cta__body">Join for $39 — access through Dec 31, 2029, early-bird pricing.</p>
+        <JoinTrigger className="btn btn--gold section-cta">Join Belsalameh</JoinTrigger>
       </div>
     </section>
   );
