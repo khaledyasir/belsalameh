@@ -39,30 +39,25 @@ export function Partners() {
           <div className="partner-card">
             <h3>Royal Jordanian</h3>
             <p>
-              Jordan&apos;s flagship carrier, an expanding fleet carrying the warmth of Levantine hospitality to
-              50+ destinations across four continents.
+              Jordan&apos;s flagship carrier, an expanding fleet carrying authentic Jordanian hospitality to 50+
+              destinations across four continents.
+            </p>
+            <p>
+              Whether you are landing or simply passing through, transform your transit into an extraordinary
+              journey. Step back in time at ancient Petra, float weightless in the Dead Sea&apos;s mineral waters,
+              and take in the majestic landscapes of Wadi Rum, turning a routine connection into a lifetime memory.
+            </p>
+            <p className="partner-card__flourish">
+              To ExploRJordan&hellip;
+              <br />
+              Just follow the crown!!
             </p>
             <div className="partner-card__actions">
               <a href="https://www.rj.com/" target="_blank" rel="noreferrer" className="btn btn--gold">
                 Follow the Crown
               </a>
             </div>
-          </div>
-
-          <div className="jordan-card">
-            <h3>Experience Jordan</h3>
-            <p>
-              Make Jordan your next stopover destination. Step back in time at ancient Petra, indulge in a mud
-              treatment at the Dead Sea, take in the majestic views of Wadi Rum, and explore so much more.
-            </p>
-            <a
-              href="https://www.rj.com/en/explore-jordan"
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn--outline"
-            >
-              ExplorJordan
-            </a>
+            <p className="partner-card__signoff">RJ in exploRJordan!!</p>
           </div>
         </div>
       </section>

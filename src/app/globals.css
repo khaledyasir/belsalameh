@@ -205,6 +205,31 @@
   line-height: 1.6;
 }
 
+/* ===== Our Belief ===== */
+.belief__statement {
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 5.5vw, 46px);
+  color: var(--navy);
+  max-width: 16ch;
+  margin: 4px 0 22px;
+}
+
+.belief__body {
+  font-size: 1.05rem;
+  color: rgba(38, 36, 31, 0.75);
+  line-height: 1.65;
+  max-width: 62ch;
+  margin: 0 0 20px;
+}
+
+.belief__thanks {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: rgba(38, 36, 31, 0.55);
+  max-width: 60ch;
+  margin: 0;
+}
+
 /* ===== Navbar ===== */
 .navbar {
   background: var(--paper);
@@ -242,9 +267,110 @@
   opacity: 1;
 }
 
-.navbar__cta {
-  padding: 10px 22px;
-  font-size: 0.88rem;
+.navbar__burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.navbar__burger:hover {
+  background: rgba(36, 47, 82, 0.04);
+  border-color: rgba(36, 47, 82, 0.3);
+}
+
+.navbar__burger svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===== Site menu (burger slide-out) =====
+   Reuses the footer's own look (.footer__col-title, .footer__links) so the
+   two stay visually identical instead of duplicating styles. */
+.site-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.site-menu__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  background: rgba(36, 47, 82, 0.5);
+  cursor: pointer;
+}
+
+.site-menu__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(320px, 86vw);
+  overflow-y: auto;
+  background: var(--navy);
+  color: var(--cream);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: site-menu-slide-in 0.25s ease;
+}
+
+@keyframes site-menu-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.site-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 243, 224, 0.15);
+}
+
+.site-menu__brand {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--sand);
+}
+
+.site-menu__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+}
+
+.site-menu__close:hover {
+  background: rgba(255, 243, 224, 0.1);
+}
+
+.site-menu__close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.site-menu .footer__col {
+  margin-bottom: 22px;
 }
 
 @media (max-width: 640px) {
@@ -533,34 +659,18 @@
   margin-top: 4px;
 }
 
-.jordan-card {
-  margin-top: 20px;
-  padding: 36px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.jordan-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.jordan-card h3 {
-  font-family: var(--font-heading);
-  font-size: 1.15rem;
-  margin: 0 0 12px;
+.partner-card__flourish {
+  font-style: italic;
   color: var(--navy);
+  opacity: 0.8;
 }
 
-.jordan-card p {
-  font-size: 0.95rem;
-  color: rgba(38, 36, 31, 0.7);
-  line-height: 1.6;
-  max-width: 58ch;
-  margin: 0 0 18px;
+.partner-card__signoff {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .disclosure {

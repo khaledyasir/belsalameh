@@ -1,15 +1,6 @@
 import Link from "next/link";
-import { JoinTrigger } from "./join";
-
-// Prefixed with "/" so these work from any page, not just the homepage -
-// a bare "#services" only scrolls if you're already on / (nothing to scroll
-// to on /checkout, /faq, etc). "/#id" navigates to the homepage first.
-const NAV_LINKS = [
-  { label: "Services", href: "/#services" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "Partners", href: "/#partners" },
-  { label: "FAQ", href: "/faq" },
-];
+import { FOOTER_EXPLORE_LINKS } from "@/lib/site-nav";
+import { SiteMenu } from "./site-menu";
 
 export function Navbar() {
   return (
@@ -19,15 +10,18 @@ export function Navbar() {
           <img src="/logo-dark.png" alt="Belsalameh" className="navbar__brand-icon" />
         </Link>
 
+        {/* Prefixed with "/" so these work from any page, not just the homepage -
+            a bare "#services" only scrolls if you're already on / (nothing to
+            scroll to on /checkout, /faq, etc). "/#id" navigates home first. */}
         <nav className="navbar__links" aria-label="Primary">
-          {NAV_LINKS.map((link) => (
+          {FOOTER_EXPLORE_LINKS.map((link) => (
             <Link key={link.href} href={link.href}>
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <JoinTrigger className="btn btn--gold btn--pill navbar__cta">Join</JoinTrigger>
+        <SiteMenu />
       </div>
     </header>
   );

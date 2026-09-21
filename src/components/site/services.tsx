@@ -1,15 +1,17 @@
 const UNLOCKS = [
   {
     title: "Micro-Weight Relief",
-    description: "1–3 kg overweight at the counter? Pay the member rate and never leave belongings behind.",
-  },
-  {
-    title: "Carry-On Flexibility",
-    description: "Extended cabin-bag weight tolerance for smooth, hassle-free boarding.",
+    description: (
+      <>
+        1–3 kg overweight at the counter?
+        <br />
+        Pay the member rate and never leave belongings behind.
+      </>
+    ),
   },
   {
     title: "Priority Bag Handling",
-    description: "Get your bag among the first off the carousel, provided by the airline.",
+    description: "Get your bag among the first off the carousel.",
   },
 ];
 

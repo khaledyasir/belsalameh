@@ -4,7 +4,7 @@ export function Hero() {
   return (
     <section id="home" className="hero">
       <div className="hero__inner">
-        <p className="eyebrow">You&apos;re cleared for stress-free boarding</p>
+        <p className="eyebrow">&ldquo;You&apos;re cleared for stress-free boarding.&rdquo;</p>
         <h1>Fly in relief. Skip the surprises at the counter.</h1>
         <p className="hero__sub">
           Avoid heavy airport counter penalties and hand-luggage stress. Belsalameh unlocks exclusive airline
