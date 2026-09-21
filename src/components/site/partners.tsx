@@ -57,7 +57,6 @@ export function Partners() {
                 Follow the Crown
               </a>
             </div>
-            <p className="partner-card__signoff">RJ in exploRJordan!!</p>
           </div>
         </div>
       </section>

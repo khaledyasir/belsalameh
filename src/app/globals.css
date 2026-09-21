@@ -665,13 +665,6 @@
   opacity: 0.8;
 }
 
-.partner-card__signoff {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: 0.02em;
-  margin: 0;
-}
 
 .disclosure {
   font-size: 0.8rem;
