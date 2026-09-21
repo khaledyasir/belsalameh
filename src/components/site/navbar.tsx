@@ -1,6 +1,14 @@
 import Link from "next/link";
-import { FOOTER_EXPLORE_LINKS } from "@/lib/site-nav";
 import { SiteMenu } from "./site-menu";
+
+// Deliberately its own list, not lib/site-nav's FOOTER_EXPLORE_LINKS: the
+// always-visible top bar stays short even as the footer/menu grow longer.
+const NAV_LINKS = [
+  { label: "Services", href: "/#services" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Partners", href: "/#partners" },
+  { label: "FAQ", href: "/faq" },
+];
 
 export function Navbar() {
   return (
@@ -14,7 +22,7 @@ export function Navbar() {
             a bare "#services" only scrolls if you're already on / (nothing to
             scroll to on /checkout, /faq, etc). "/#id" navigates home first. */}
         <nav className="navbar__links" aria-label="Primary">
-          {FOOTER_EXPLORE_LINKS.map((link) => (
+          {NAV_LINKS.map((link) => (
             <Link key={link.href} href={link.href}>
               {link.label}
             </Link>

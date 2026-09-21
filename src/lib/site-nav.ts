@@ -4,6 +4,7 @@
  */
 export const FOOTER_EXPLORE_LINKS = [
   { label: "Services", href: "/#services" },
+  { label: "Our Belief", href: "/#our-belief" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Partners", href: "/#partners" },
   { label: "FAQ", href: "/faq" },
