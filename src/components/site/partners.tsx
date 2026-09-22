@@ -50,11 +50,10 @@ export function Partners() {
             <p className="partner-card__flourish">
               To ExploRJordan&hellip;
               <br />
-              Just follow the crown!!
             </p>
             <div className="partner-card__actions">
               <a href="https://www.rj.com/" target="_blank" rel="noreferrer" className="btn btn--gold">
-                Follow the Crown
+                Just Follow The Crown!!
               </a>
             </div>
           </div>
