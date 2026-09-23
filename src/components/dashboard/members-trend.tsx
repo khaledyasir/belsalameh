@@ -82,6 +82,7 @@ export function MembersTrend({ series }: { series: DayPoint[] }) {
                   height={height}
                   fill="transparent"
                   tabIndex={0}
+                  className="outline-none"
                   onMouseEnter={() => setHover(i)}
                   onMouseLeave={() => setHover(null)}
                   onFocus={() => setHover(i)}

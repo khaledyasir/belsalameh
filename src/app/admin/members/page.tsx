@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { guard } from "@/lib/guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { Card, CardBody } from "@/components/ui/card";
@@ -53,9 +54,14 @@ export default async function MembersPage({
         description="Subscribers to the Balsalameh Membership. Spec-defined stored fields: full name, email, Membership ID, expiry month & year."
         crumbs={[{ label: "Admin", href: "/admin" }, { label: "Members" }]}
         actions={
-          <a href="/admin/members/export" className={buttonClasses("secondary")}>
-            Export CSV
-          </a>
+          <>
+            <Link href="/admin/members/walk-in" className={buttonClasses("primary")}>
+              Add walk-in member
+            </Link>
+            <a href="/admin/members/export" className={buttonClasses("secondary")}>
+              Export CSV
+            </a>
+          </>
         }
       />
 

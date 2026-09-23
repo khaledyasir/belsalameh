@@ -16,6 +16,7 @@ export const NAV: NavItem[] = [
     icon: "Users",
     children: [
       { label: "All members", href: "/admin/members" },
+      { label: "Add walk-in member", href: "/admin/members/walk-in" },
       { label: "Verify member", href: "/admin/members/verify" },
     ],
   },
