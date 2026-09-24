@@ -37,6 +37,8 @@ export type Transaction = {
   ipnReceivedAt: Date | null;
   createdAt: Date;
   memberId: string | null;
+  /** Every membership issued by this payment (more than one for a group order). */
+  memberIds: string[];
 };
 
 export type WebhookEvent = {
@@ -139,7 +141,7 @@ function toTxnVM(row: {
   id: string; reference: string; provider: string; providerRef: string | null;
   amountMinor: number; currency: string; status: string; fullName: string; email: string;
   failureReason: string | null; ipnReceivedAt: Date | null; createdAt: Date;
-  member?: { id: string } | null;
+  members?: { id: string }[];
 }): Transaction {
   return {
     id: row.id,
@@ -154,7 +156,8 @@ function toTxnVM(row: {
     failureReason: row.failureReason,
     ipnReceivedAt: row.ipnReceivedAt,
     createdAt: row.createdAt,
-    memberId: row.member?.id ?? null,
+    memberId: row.members?.[0]?.id ?? null,
+    memberIds: row.members?.map((m) => m.id) ?? [],
   };
 }
 
@@ -182,7 +185,7 @@ export async function listTransactions(
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { member: { select: { id: true } } },
+      include: { members: { select: { id: true }, orderBy: { createdAt: "asc" as const } } },
     }),
     db.transaction.count({ where }),
   ]);
@@ -190,7 +193,7 @@ export async function listTransactions(
 }
 
 export async function getTransaction(id: string): Promise<Transaction | null> {
-  const row = await db.transaction.findUnique({ where: { id }, include: { member: { select: { id: true } } } });
+  const row = await db.transaction.findUnique({ where: { id }, include: { members: { select: { id: true }, orderBy: { createdAt: "asc" as const } } } });
   return row ? toTxnVM(row) : null;
 }
 
@@ -215,7 +218,7 @@ export async function getDashboardData() {
       db.member.findMany({ where: { purchasedAt: { gte: since90 } }, select: { purchasedAt: true } }),
       db.member.count({ where: { status: "ACTIVE" } }),
       db.member.findMany({ orderBy: { purchasedAt: "desc" }, take: 6 }),
-      db.transaction.findMany({ orderBy: { createdAt: "desc" }, take: 6, include: { member: { select: { id: true } } } }),
+      db.transaction.findMany({ orderBy: { createdAt: "desc" }, take: 6, include: { members: { select: { id: true }, orderBy: { createdAt: "asc" as const } } } }),
       db.transaction.aggregate({ _sum: { amountMinor: true }, where: { status: "CAPTURED", createdAt: { gte: since30 } } }),
       db.transaction.count({ where: { status: "CAPTURED" } }),
       db.transaction.count(),

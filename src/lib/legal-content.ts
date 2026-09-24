@@ -41,11 +41,11 @@ export const TERMS: LegalDoc = {
       ],
     },
     {
-      heading: "3. Launch service terms (1–4 kg micro-excess baggage service)",
+      heading: "3. Launch service terms (1–3 kg micro-excess baggage service)",
       body: [
         "Operational eligibility: valid strictly on flights operated directly by founding partner Royal Jordanian, where the passenger’s booking reference / PNR begins with “RJ”.",
         "Ineligible routes & booking types: codeshare flights operated by partner carriers, interline itineraries involving secondary airlines, and multi-airline tickets are strictly excluded.",
-        "Weight allowance & capping: covers minor excess luggage between 1.00 kg and 4.00 kg over the standard allowance, capping total checked bag weight at a maximum of 27.00 kg. Luggage over 27.00 kg remains subject to standard published airline excess baggage fees.",
+        "Weight allowance & capping: covers minor excess luggage between 1.00 kg and 3.00 kg over the standard allowance, capping total checked bag weight at a maximum of 26.00 kg. Luggage over 26.00 kg remains subject to standard published airline excess baggage fees.",
         "Account capping & companions: protection is capped at one (1) checked bag per active member (matching the passport name provided during payment, not per PNR or booking group). Travel companions must hold their own active Belsalameh membership.",
       ],
     },
@@ -60,8 +60,8 @@ export const TERMS: LegalDoc = {
     {
       heading: "5. Service discrepancy & reimbursement resolution",
       body: [
-        "Operational restrictions excluded: direct monetary reimbursement applies strictly and only to verified cases where an airport check-in agent fails or refuses to recognise an active Belsalameh membership on an eligible flight. It does not apply to service unavailability caused by operating-carrier restrictions, including aircraft payload limits, route weight caps, peak-season restrictions, or bags exceeding the 27.00 kg maximum.",
-        `Claim submission: if a check-in agent refuses to recognise an active membership on an eligible flight, pay the airline counter fee to proceed with travel, keep all documentation, and email a claim to ${E} within 14 days of travel. The claim must include: (1) the flight number and flight date; (2) the official airline payment receipt showing counter charges paid under the member’s full legal name; and (3) the official airline baggage tag slip proving the checked bag weighed 27.00 kg or below.`,
+        "Operational restrictions excluded: direct monetary reimbursement applies strictly and only to verified cases where an airport check-in agent fails or refuses to recognise an active Belsalameh membership on an eligible flight. It does not apply to service unavailability caused by operating-carrier restrictions, including aircraft payload limits, route weight caps, peak-season restrictions, or bags exceeding the 26.00 kg maximum.",
+        `Claim submission: if a check-in agent refuses to recognise an active membership on an eligible flight, pay the airline counter fee to proceed with travel, keep all documentation, and email a claim to ${E} within 14 days of travel. The claim must include: (1) the flight number and flight date; (2) the official airline payment receipt showing counter charges paid under the member’s full legal name; and (3) the official airline baggage tag slip proving the checked bag weighed 26.00 kg or below.`,
         "5-day resolution guarantee: Belsalameh cross-verifies the flight details against airline operational logs and resolves valid claims within 5 working days. For verified cases of non-recognition on an unrestricted eligible flight, Belsalameh issues direct monetary compensation covering the exact price difference paid above the protected member rate.",
         "Fraud, misuse & claim forfeiture: submitting falsified payment receipts, altered baggage tags, or misrepresented flight dates or details results in immediate claim denial, permanent revocation of membership without refund, and potential legal action under applicable anti-fraud regulations.",
       ],

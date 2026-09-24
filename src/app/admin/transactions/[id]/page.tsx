@@ -18,7 +18,8 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   const txn = await getTransaction(id);
   if (!txn) notFound();
 
-  const member = txn.memberId ? await getMember(txn.memberId) : null;
+  const members = (await Promise.all(txn.memberIds.map((mid) => getMember(mid)))).filter((m) => m !== null);
+  const member = members[0] ?? null;
   const canRefund = txn.status === "CAPTURED";
 
   const timeline = [
@@ -67,12 +68,18 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             <Detail label="Email" value={txn.email} />
             {txn.failureReason && <Detail label="Failure reason" value={<span className="text-danger">{txn.failureReason}</span>} />}
             <Detail
-              label="Member"
+              label={members.length > 1 ? `Members (${members.length})` : "Member"}
               value={
-                member ? (
-                  <Link href={`/admin/members/${member.id}`} className="text-brand-indigo hover:underline">
-                    {member.fullName} ({member.membershipId})
-                  </Link>
+                members.length ? (
+                  <ul className="space-y-1">
+                    {members.map((m) => (
+                      <li key={m.id}>
+                        <Link href={`/admin/members/${m.id}`} className="text-brand-indigo hover:underline">
+                          {m.fullName} ({m.membershipId})
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 ) : (
                   "Not created"
                 )

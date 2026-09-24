@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { durationMonthsSchema } from "./plan-schema";
 
 /**
  * Manual, in-person signup — an admin enters the buyer's details instead of
@@ -12,6 +13,8 @@ export const walkInSchema = z.object({
     .min(2, "Enter the member's full name as it appears on their passport")
     .max(120, "That name is too long"),
   email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  /** Membership length chosen by the admin; the price is worked out server-side from the saved plan. */
+  durationMonths: durationMonthsSchema,
 });
 
 export type WalkInInput = z.infer<typeof walkInSchema>;

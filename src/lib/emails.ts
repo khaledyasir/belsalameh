@@ -64,7 +64,7 @@ export async function sendEmail({ to, subject, text, html }: Mail): Promise<Send
 
 // ── Templates ────────────────────────────────────────────────────────────
 
-type MemberFacts = {
+export type MemberFacts = {
   fullName: string;
   email: string;
   membershipId: string;
@@ -77,30 +77,54 @@ function esc(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 }
 
-/** Customer email — this IS the proof of membership shown at check-in. */
-function memberConfirmation(m: MemberFacts): Mail {
-  const expiry = formatExpiry(m.expiryMonth, m.expiryYear);
-  const rows: [string, string][] = [
-    ["Name (as on passport)", m.fullName],
-    ["Membership ID", m.membershipId],
-    ["Valid until", expiry],
-    ["Order reference", m.reference],
-  ];
-  const text = `Hi ${m.fullName},
+/** Subject of the proof-of-membership email; also stored on the EmailLog row. */
+export function proofSubject(people: Pick<MemberFacts, "membershipId">[]): string {
+  return people.length === 1
+    ? `Your Belsalameh membership is active - ${people[0].membershipId}`
+    : `Your Belsalameh memberships are active - ${people.length} people`;
+}
 
-Your payment has been received and your Belsalameh membership is now active.
-Keep this email. It is your proof of membership. At check-in the agent matches
-the name and Membership ID below.
+/**
+ * Customer email — this IS the proof of membership shown at check-in. Lists one
+ * block per person; `paidBy` switches the opening line for someone who was added
+ * to another person's order.
+ */
+function memberConfirmation(people: MemberFacts[], opts: { paidBy?: string } = {}): Mail {
+  const single = people.length === 1;
+  const ref = people[0].reference;
+  const blocks = people.map((m) => ({
+    who: m,
+    rows: [
+      ["Name (as on passport)", m.fullName],
+      ["Membership ID", m.membershipId],
+      ["Valid until", formatExpiry(m.expiryMonth, m.expiryYear)],
+    ] as [string, string][],
+  }));
+  // A single membership keeps the order reference inside its own block.
+  if (single) blocks[0].rows.push(["Order reference", ref]);
 
-  Name (as on passport):  ${m.fullName}
-  Membership ID:          ${m.membershipId}
-  Valid until:            ${expiry}
-  Order reference:        ${m.reference}
+  const lead = opts.paidBy
+    ? `A Belsalameh membership has been purchased for you by ${opts.paidBy} and is now active.`
+    : single
+      ? "Your payment has been received and your Belsalameh membership is now active."
+      : "Your payment has been received and your Belsalameh memberships are now active.";
+  const keep = single
+    ? "Keep this email. It is your proof of membership. At check-in the agent matches\nthe name and Membership ID below."
+    : "Keep this email. It is the proof of membership for everyone listed below. At\ncheck-in the agent matches each traveller's name and Membership ID.";
 
+  const text = `Hi ${people[0].fullName},
+
+${lead}
+${keep}
+
+${blocks
+  .map((b) => b.rows.map(([k, v]) => `  ${(k + ":").padEnd(24)}${v}`).join("\n"))
+  .join("\n\n")}
+${single ? "" : `\n  ${"Order reference:".padEnd(24)}${ref}\n`}
 What it covers
-  The 1-4 kg Micro-Excess Baggage Service, for Royal Jordanian flights with an
-  RJ booking reference. If your checked bag is 1 to 4 kg over the standard 23 kg
-  allowance (up to 27 kg total), show this email at the check-in counter and pay
+  The 1-3 kg Micro-Excess Baggage Service, for Royal Jordanian flights with an
+  RJ booking reference. If your checked bag is 1 to 3 kg over the standard 23 kg
+  allowance (up to 26 kg total), show this email at the check-in counter and pay
   the fixed member rate instead of standard excess fees.
 
 Questions? Reply to this email or contact ${CONTACT_EMAIL}.
@@ -108,40 +132,58 @@ Questions? Reply to this email or contact ${CONTACT_EMAIL}.
 Belsalameh
 Fly in relief`;
 
-  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:560px;margin:0 auto;color:#2E3A6E">
-  <p style="font-size:16px">Hi ${esc(m.fullName)},</p>
-  <p style="font-size:14px;line-height:1.6;color:#4a4a5a">Your payment has been received and your <strong>Belsalameh</strong> membership is now active. Keep this email &mdash; it is your proof of membership. At check-in the agent matches the name and Membership ID below.</p>
-  <table style="width:100%;border-collapse:collapse;margin:20px 0;background:#FFF3E0;border-radius:12px">
+  const table = (rows: [string, string][]) => `<table style="width:100%;border-collapse:collapse;margin:20px 0;background:#FFF3E0;border-radius:12px">
     ${rows
       .map(
         ([k, v]) =>
           `<tr><td style="padding:10px 16px;font-size:12px;color:#6b6b7b;white-space:nowrap">${esc(k)}</td><td style="padding:10px 16px;font-size:14px;font-weight:600;text-align:right">${esc(v)}</td></tr>`,
       )
       .join("")}
-  </table>
-  <p style="font-size:13px;line-height:1.6;color:#4a4a5a"><strong>What it covers.</strong> The 1&ndash;4 kg Micro-Excess Baggage Service, for Royal Jordanian flights with an RJ booking reference. If your checked bag is 1 to 4 kg over the standard 23 kg allowance (up to 27 kg total), show this email at the check-in counter and pay the fixed member rate instead of standard excess fees.</p>
+  </table>`;
+
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:560px;margin:0 auto;color:#2E3A6E">
+  <p style="font-size:16px">Hi ${esc(people[0].fullName)},</p>
+  <p style="font-size:14px;line-height:1.6;color:#4a4a5a">${esc(lead).replace("Belsalameh", "<strong>Belsalameh</strong>")} Keep this email &mdash; it is ${single ? "your" : "the"} proof of membership${single ? "" : " for everyone listed below"}. At check-in the agent matches the name and Membership ID${single ? " below" : " of each traveller"}.</p>
+  ${blocks.map((b) => table(b.rows)).join("\n  ")}
+  ${single ? "" : `<p style="font-size:12px;color:#6b6b7b">Order reference: <strong style="color:#2E3A6E">${esc(ref)}</strong></p>`}
+  <p style="font-size:13px;line-height:1.6;color:#4a4a5a"><strong>What it covers.</strong> The 1&ndash;3 kg Micro-Excess Baggage Service, for Royal Jordanian flights with an RJ booking reference. If your checked bag is 1 to 3 kg over the standard 23 kg allowance (up to 26 kg total), show this email at the check-in counter and pay the fixed member rate instead of standard excess fees.</p>
   <p style="font-size:13px;color:#4a4a5a">Questions? Reply to this email or contact <a href="mailto:${CONTACT_EMAIL}" style="color:#6D5FA3">${CONTACT_EMAIL}</a>.</p>
   <p style="font-size:13px;color:#6D5FA3;margin-top:24px">Belsalameh &mdash; Fly in relief</p>
 </div>`;
 
-  return { to: m.email, subject: `Your Belsalameh membership is active - ${m.membershipId}`, text, html };
+  return { to: people[0].email, subject: proofSubject(people), text, html };
 }
 
 /** Internal copy to the company for every captured payment. */
 function companyNotification(
-  m: MemberFacts & { amountMinor: number; currency: string; providerRef: string | null; capturedAt: Date },
+  people: MemberFacts[],
+  m: { amountMinor: number; currency: string; providerRef: string | null; capturedAt: Date },
 ): Mail {
-  const text = `A membership was just activated.
+  const first = people[0];
+  const who = people
+    .map(
+      (p) => `  Name:            ${p.fullName}
+  Email:           ${p.email}
+  Membership ID:   ${p.membershipId}
+  Valid until:     ${formatExpiry(p.expiryMonth, p.expiryYear)}`,
+    )
+    .join("\n\n");
+  const text = `${people.length === 1 ? "A membership was" : `${people.length} memberships were`} just activated.
 
-  Name:            ${m.fullName}
-  Email:           ${m.email}
-  Membership ID:   ${m.membershipId}
-  Valid until:     ${formatExpiry(m.expiryMonth, m.expiryYear)}
+${who}
+
   Amount:          ${formatMoney(m.amountMinor, m.currency)}
-  Order reference: ${m.reference}
+  Order reference: ${first.reference}
   Provider ref:    ${m.providerRef ?? "-"}
   Captured at:     ${formatDateTime(m.capturedAt)}`;
-  return { to: EMAIL_COMPANY_NOTIFY, subject: `New membership: ${m.fullName} (${m.membershipId})`, text };
+  return { to: EMAIL_COMPANY_NOTIFY, subject: notifySubject(people), text };
+}
+
+/** Subject of the internal notification; also stored on its EmailLog row. */
+export function notifySubject(people: Pick<MemberFacts, "fullName" | "membershipId">[]): string {
+  return people.length === 1
+    ? `New membership: ${people[0].fullName} (${people[0].membershipId})`
+    : `New memberships (${people.length}): ${people[0].fullName} + ${people.length - 1} more`;
 }
 
 // ── Orchestration (called from capturePayment after the DB transaction) ───
@@ -149,23 +191,31 @@ function companyNotification(
 export async function deliverMembershipEmails(input: {
   proofLogId: string;
   notifyLogId: string;
-  member: MemberFacts;
+  /** Everyone on the order, the payer first. */
+  people: MemberFacts[];
+  /** Extra people who were given their own address: they get an individual copy. */
+  extras: { logId: string; person: MemberFacts }[];
   amountMinor: number;
   currency: string;
   providerRef: string | null;
   capturedAt: Date;
 }): Promise<void> {
-  // Email off / no key: leave both log rows "queued" for a later manual resend.
+  const { people } = input;
+  const ids = people.map((p) => p.membershipId).join(", ");
+
+  // Email off / no key: leave every log row "queued" for a later manual resend.
   if (!EMAILS_ENABLED) {
-    console.log(`[email] EMAILS_ENABLED is off — leaving both emails "queued" for membership ${input.member.membershipId} (reference ${input.member.reference})`);
+    console.log(`[email] EMAILS_ENABLED is off — leaving emails "queued" for ${ids} (reference ${people[0].reference})`);
     return;
   }
 
-  console.log(`[email] delivering membership emails for ${input.member.membershipId} (reference ${input.member.reference}, to ${input.member.email})`);
+  console.log(`[email] delivering membership emails for ${ids} (reference ${people[0].reference}, to ${people[0].email})`);
 
-  const [customer, company] = await Promise.all([
-    sendEmail(memberConfirmation(input.member)),
-    sendEmail(companyNotification({ ...input.member, amountMinor: input.amountMinor, currency: input.currency, providerRef: input.providerRef, capturedAt: input.capturedAt })),
+  const payer = people[0].fullName;
+  const [customer, company, ...extraResults] = await Promise.all([
+    sendEmail(memberConfirmation(people)),
+    sendEmail(companyNotification(people, input)),
+    ...input.extras.map((x) => sendEmail(memberConfirmation([x.person], { paidBy: payer }))),
   ]);
 
   const patch = (r: SendResult) => ({
@@ -177,14 +227,87 @@ export async function deliverMembershipEmails(input: {
   await Promise.all([
     db.emailLog.update({ where: { id: input.proofLogId }, data: patch(customer) }).catch(() => {}),
     db.emailLog.update({ where: { id: input.notifyLogId }, data: patch(company) }).catch(() => {}),
+    ...input.extras.map((x, i) =>
+      db.emailLog.update({ where: { id: x.logId }, data: patch(extraResults[i]) }).catch(() => {}),
+    ),
   ]);
 
-  if (customer.ok && company.ok) {
-    console.log(`[email] both sent OK for ${input.member.membershipId}`);
+  if (customer.ok && company.ok && extraResults.every((r) => r.ok)) {
+    console.log(`[email] all sent OK for ${ids}`);
   } else {
-    console.warn(`[email] delivery had failures for ${input.member.membershipId}:`, {
+    console.warn(`[email] delivery had failures for ${ids}:`, {
       customer: customer.ok ? "ok" : customer.error,
       company: company.ok ? "ok" : company.error,
+      extras: extraResults.map((r) => (r.ok ? "ok" : r.error)),
     });
   }
+}
+
+// ── "Your membership has ended" ──────────────────────────────────────────
+
+type EndedPerson = { fullName: string; expiryMonth: number; expiryYear: number };
+
+function membershipEnded(people: EndedPerson[], to: string, joinUrl: string): Mail {
+  const single = people.length === 1;
+  const line = (p: EndedPerson) => `${p.fullName}, ended ${formatExpiry(p.expiryMonth, p.expiryYear)}`;
+
+  const text = `Hi ${people[0].fullName},
+
+${single ? "Your Belsalameh membership has ended." : "These Belsalameh memberships have ended:"}
+${people.map((p) => `  - ${line(p)}`).join("\n")}
+
+Want to keep your member rates at the airport? Extending takes about a minute:
+${joinUrl}
+
+Open the link, fill in the short form, and your new confirmation email arrives straight away. The current plan and price are shown before you pay.
+
+Nothing is renewed or charged automatically. This is a one-time reminder.
+
+Questions? Reply to this email or contact ${CONTACT_EMAIL}.
+
+Belsalameh
+Fly in relief`;
+
+  const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:560px;margin:0 auto;color:#2E3A6E">
+  <p style="font-size:16px">Hi ${esc(people[0].fullName)},</p>
+  <p style="font-size:14px;line-height:1.6;color:#4a4a5a">${single ? "Your <strong>Belsalameh</strong> membership has ended." : "These <strong>Belsalameh</strong> memberships have ended:"}</p>
+  <ul style="font-size:14px;line-height:1.7;color:#2E3A6E">${people.map((p) => `<li>${esc(line(p))}</li>`).join("")}</ul>
+  <p style="font-size:14px;line-height:1.6;color:#4a4a5a">Want to keep your member rates at the airport? Extending takes about a minute.</p>
+  <p style="margin:20px 0"><a href="${esc(joinUrl)}" style="display:inline-block;background:#2E3A6E;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px">Extend my membership</a></p>
+  <p style="font-size:13px;line-height:1.6;color:#4a4a5a">Open the link, fill in the short form, and your new confirmation email arrives straight away. The current plan and price are shown before you pay. Nothing is renewed or charged automatically. This is a one-time reminder.</p>
+  <p style="font-size:13px;color:#4a4a5a">Questions? Reply to this email or contact <a href="mailto:${CONTACT_EMAIL}" style="color:#6D5FA3">${CONTACT_EMAIL}</a>.</p>
+  <p style="font-size:13px;color:#6D5FA3;margin-top:24px">Belsalameh &mdash; Fly in relief</p>
+</div>`;
+
+  return {
+    to,
+    subject: single ? "Your Belsalameh membership has ended" : "Your Belsalameh memberships have ended",
+    text,
+    html,
+  };
+}
+
+/** Sends the "membership ended" email and records the result on its EmailLog row. Returns whether SendGrid accepted it. */
+export async function deliverMembershipEndedEmail(input: {
+  logId: string;
+  to: string;
+  people: EndedPerson[];
+  joinUrl: string;
+}): Promise<boolean> {
+  const result = await sendEmail(membershipEnded(input.people, input.to, input.joinUrl));
+  await db.emailLog
+    .update({
+      where: { id: input.logId },
+      data: {
+        status: result.ok ? "sent" : "failed",
+        providerMessageId: result.messageId ?? null,
+        error: result.ok ? null : (result.error ?? "unknown").slice(0, 400),
+      },
+    })
+    .catch(() => {});
+  return result.ok;
+}
+
+export function membershipEndedSubject(count: number): string {
+  return count === 1 ? "Your Belsalameh membership has ended" : "Your Belsalameh memberships have ended";
 }

@@ -45,15 +45,17 @@ model Member {
   expiryYear   Int
   status       String   @default("ACTIVE") @db.NVarChar(20) // ACTIVE | EXPIRED | REVOKED
   purchasedAt  DateTime
+  expiryEmailSentAt DateTime? // set once the "your membership has ended" email went out
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   transaction   Transaction? @relation(fields: [transactionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  transactionId String?      @unique @db.NVarChar(30)
+  transactionId String?      @db.NVarChar(30) // one payment can cover several people
   emails        EmailLog[]
 
   @@index([email])
   @@index([status])
+  @@index([transactionId])
   @@map("Members")
 }
 
@@ -66,23 +68,38 @@ model Transaction {
   providerRef            String?   @db.NVarChar(100) // gateway transaction id
   amountMinor            Int
   currency               String    @default("JOD") @db.NVarChar(3)
+  durationMonths         Int       @default(12) // membership length agreed at checkout (per person)
   status                 String    @default("PENDING") @db.NVarChar(20) // PENDING | CAPTURED | FAILED | REFUNDED
   fullName               String    @db.NVarChar(120)
   email                  String    @db.NVarChar(256)
   consentTermsAccepted   Boolean   @default(false)
   consentPrivacyAccepted Boolean   @default(false)
   consentVersion         String?   @db.NVarChar(20)
+  consentAdultConfirmed  Boolean   @default(false) // payer confirmed everyone on the order is 18+
+  party                  String?   @db.NVarChar(Max) // JSON [{fullName, email?}] — extra people on this order
   failureReason          String?   @db.NVarChar(400)
   rawResponse            String?   @db.NVarChar(Max) // gateway payload (JSON text)
   ipnReceivedAt          DateTime?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
-  member Member?
+  members Member[]
 
   @@index([status])
   @@index([createdAt])
   @@map("Transactions")
+}
+
+/// The plan being sold right now — a single row (id "default") edited in Admin › Settings.
+/// The public site, checkout and the walk-in tab all read it. Existing members are unaffected.
+model MembershipSettings {
+  id              String   @id @default("default") @db.NVarChar(20)
+  priceMinor      Int // total price for `durationMonths`, per person, in minor units (JOD: 1000 = 1.000)
+  durationMonths  Int
+  sendExpiryEmail Boolean  @default(true) // email members when their membership ends, with a link to renew
+  updatedAt       DateTime @updatedAt
+
+  @@map("MembershipSettings")
 }
 
 /// Inbound payment notifications (MEPS IPN). Dedupe key makes processing

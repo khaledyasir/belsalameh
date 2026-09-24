@@ -17,12 +17,18 @@ export async function startCheckout(
   _prev: CheckoutState,
   formData: FormData,
 ): Promise<CheckoutState> {
+  // Extra people arrive as parallel lists (one name + one, possibly empty, email per row).
+  const partyNames = formData.getAll("partyName").map(String);
+  const partyEmails = formData.getAll("partyEmail").map(String);
+
   const parsed = checkoutSchema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     confirmEmail: formData.get("confirmEmail"),
+    party: partyNames.map((fullName, i) => ({ fullName, email: partyEmails[i] ?? "" })),
     agreeTerms: formData.get("agreeTerms"),
     confirmPrivacy: formData.get("confirmPrivacy"),
+    confirmAdult: formData.get("confirmAdult"),
   });
 
   if (!parsed.success) {
@@ -42,6 +48,8 @@ export async function startCheckout(
   const { reference } = await createPendingTransaction({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
+    party: parsed.data.party,
+    adultConfirmed: parsed.data.confirmAdult,
   });
 
   redirect(`/checkout/processing?ref=${encodeURIComponent(reference)}`);

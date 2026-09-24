@@ -22,7 +22,7 @@ export const SITE = {
   hero: {
     eyebrow: `Founding partner · ${PARTNER}`,
     heading: "Slightly overweight luggage? Pay less, right at the airport counter.",
-    body: `No pre-booking, no pre-paying. Belsalameh unlocks protected flat rates for 1–4 kg of excess baggage, co-created with founding partner ${PARTNER}, paid directly at check-in.`,
+    body: `No pre-booking, no pre-paying. Belsalameh unlocks protected flat rates for 1–3 kg of excess baggage, co-created with founding partner ${PARTNER}, paid directly at check-in.`,
     primaryCta: "Unlock member rates",
     microcopy: `One-time annual fee · Early Bird access through ${EARLY_BIRD_DATE} · Zero auto-renewals`,
   },
@@ -63,12 +63,12 @@ export const SITE = {
   service: {
     heading: "The service",
     lead: `Belsalameh unlocks unlisted airport micro-services and protected rates, co-created with full-service partner carriers and not sold to the public. Today we run one launch service, with founding partner ${PARTNER}.`,
-    name: "1–4 kg Micro-Excess Baggage Service",
+    name: "1–3 kg Micro-Excess Baggage Service",
     eligibility: `Exclusively for ${PARTNER} passengers, on flights with an RJ booking reference.`,
     body: "Slightly over your standard 23 kg allowance? Instead of steep excess-baggage charges, show your confirmation email at the check-in counter and pay a fixed, protected member rate on the spot.",
     points: [
-      "Covers 1.00 to 4.00 kg over the standard 23 kg allowance",
-      "Checked bag capped at 27.00 kg total",
+      "Covers 1.00 to 3.00 kg over the standard 23 kg allowance",
+      "Checked bag capped at 26.00 kg total",
       "One checked bag per member, matching the passport name on file",
       "Paid at the counter with full price transparency, no online booking",
     ],
@@ -89,7 +89,7 @@ export const SITE = {
       },
       {
         title: "Show email at check-in & fly in relief",
-        body: "Arrive at check-in as usual. If your bag is up to 27 kg (1–4 kg over the standard allowance), show your confirmation email to unlock member rates and pay at the counter.",
+        body: "Arrive at check-in as usual. If your bag is up to 26 kg (1–3 kg over the standard allowance), show your confirmation email to unlock member rates and pay at the counter.",
       },
     ],
   },
@@ -135,7 +135,7 @@ export const SITE = {
       },
       {
         q: "Can my travel companions use my membership?",
-        a: "It depends on the service. For our launch service (1–4 kg Micro-Excess Baggage), protection is capped at one checked bag per active member, matching the passport name provided at payment. Rules vary by service, and companion eligibility is listed for each one.",
+        a: "It depends on the service. For our launch service (1–3 kg Micro-Excess Baggage), protection is capped at one checked bag per active member, matching the passport name provided at payment. Rules vary by service, and companion eligibility is listed for each one.",
       },
       {
         q: "What if I don't receive my confirmation email or lose it?",
@@ -146,8 +146,8 @@ export const SITE = {
         a: "All airport micro-services are fulfilled directly by operating airlines. Due to operational factors such as peak seasons, aircraft weight limits, or route restrictions, airlines may temporarily restrict or cap services for specific dates or destinations. Because Belsalameh uses a direct counter-payment model on arrival, you'll never pay for a service that's unavailable.",
       },
       {
-        q: "What happens if my bag exceeds the 27 kg limit?",
-        a: "Our premiere service covers micro-excess weights up to 4.00 kg over the standard 23 kg limit (up to 27.00 kg total). Any luggage over 27.00 kg remains subject to standard excess baggage rates and policies at the airport.",
+        q: "What happens if my bag exceeds the 26 kg limit?",
+        a: "Our premiere service covers micro-excess weights up to 3.00 kg over the standard 23 kg limit (up to 26.00 kg total). Any luggage over 26.00 kg remains subject to standard excess baggage rates and policies at the airport.",
       },
     ],
   },

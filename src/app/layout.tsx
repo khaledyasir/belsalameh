@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s · Belsalameh",
   },
   description:
-    "Belsalameh unlocks protected flat rates for 1–4 kg of excess baggage, co-created with founding partner Royal Jordanian. Pay at the airport counter.",
+    "Belsalameh unlocks protected flat rates for 1–3 kg of excess baggage, co-created with founding partner Royal Jordanian. Pay at the airport counter.",
   icons: {
     icon: "/plane.png",
   },

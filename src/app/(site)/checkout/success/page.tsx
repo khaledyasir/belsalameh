@@ -14,9 +14,10 @@ export default async function SuccessPage({
   const { ref } = await searchParams;
 
   const txn = ref
-    ? await db.transaction.findUnique({ where: { reference: ref }, include: { member: true } })
+    ? await db.transaction.findUnique({ where: { reference: ref }, include: { members: { orderBy: { createdAt: "asc" } } } })
     : null;
-  const member = txn?.member ?? null;
+  const members = txn?.members ?? [];
+  const many = members.length > 1;
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 sm:px-6">
@@ -24,32 +25,36 @@ export default async function SuccessPage({
         <CheckCircle2 className="mx-auto h-12 w-12 text-success" aria-hidden />
         <h1 className="mt-4 font-display text-2xl font-bold text-brand-indigo">Payment received</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          Your Proof of Membership has been recorded and will be emailed to you.
-          Please keep it. Validation at the airport is done by visually matching
-          your name and Membership ID.
+          {many ? "Your Proofs of Membership have" : "Your Proof of Membership has"} been recorded and will be emailed to you.
+          Please keep {many ? "them" : "it"}. Validation at the airport is done by visually matching
+          {many ? " each traveller's" : " your"} name and Membership ID.
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-brand-sand/70 bg-white p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">Proof of Membership</p>
-        <dl className="mt-3 space-y-2 text-sm">
-          <Row label="Full name (as on passport)" value={member?.fullName ?? "[Your name]"} />
-          <Row label="Membership ID" value={member?.membershipId ?? "BSL-XXXX-XXXX"} mono />
-          <Row
-            label="Expiry"
-            value={member ? formatExpiry(member.expiryMonth, member.expiryYear) : "Month YYYY"}
-          />
-        </dl>
-        {!member && (
-          <p className="mt-3 border-t border-border pt-3 text-xs text-ink-subtle">
-            No confirmed membership found for this reference yet. In Phase 3 the
-            details are filled in automatically once MEPS confirms the payment.
+      {(members.length ? members : [null]).map((member, i) => (
+        <div key={member?.id ?? "placeholder"} className={`${i === 0 ? "mt-8" : "mt-4"} rounded-2xl border border-brand-sand/70 bg-white p-5 shadow-sm`}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+            Proof of Membership{many ? ` · ${i + 1} of ${members.length}` : ""}
           </p>
-        )}
-        <p className="mt-3 border-t border-border pt-3 text-xs text-ink-subtle">
-          The email delivery itself is wired in Phase 3 (a row is logged now).
-        </p>
-      </div>
+          <dl className="mt-3 space-y-2 text-sm">
+            <Row label="Full name (as on passport)" value={member?.fullName ?? "[Your name]"} />
+            <Row label="Membership ID" value={member?.membershipId ?? "BSL-XXXX-XXXX"} mono />
+            <Row
+              label="Expiry"
+              value={member ? formatExpiry(member.expiryMonth, member.expiryYear) : "Month YYYY"}
+            />
+          </dl>
+          {!member && (
+            <p className="mt-3 border-t border-border pt-3 text-xs text-ink-subtle">
+              No confirmed membership found for this reference yet. In Phase 3 the
+              details are filled in automatically once MEPS confirms the payment.
+            </p>
+          )}
+        </div>
+      ))}
+      <p className="mt-3 text-center text-xs text-ink-subtle">
+        The email delivery itself is wired in Phase 3 (a row is logged now).
+      </p>
 
       <div className="mt-8 text-center">
         <Link href="/" className="text-sm text-brand-purple hover:underline">

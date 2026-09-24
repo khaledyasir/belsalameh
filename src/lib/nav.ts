@@ -7,7 +7,7 @@ export type NavItem = {
   children?: NavChild[];
 };
 
-/** Admin navigation. Phase 1 scope: Dashboard, Members, Transactions. */
+/** Admin navigation: Dashboard, Members, Transactions, Settings. */
 export const NAV: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" },
   {
@@ -29,4 +29,5 @@ export const NAV: NavItem[] = [
       { label: "Webhook / IPN log", href: "/admin/transactions/webhooks" },
     ],
   },
+  { label: "Settings", href: "/admin/settings", icon: "Settings" },
 ];

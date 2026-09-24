@@ -119,6 +119,24 @@ then add an inbound rule that sets it to `{REMOTE_ADDR}`.
 
 ---
 
+## Daily job: "membership ended" emails
+
+When a membership ends, the member gets one email with a link back to the join form
+(nothing is charged automatically). Something has to trigger that once a day:
+
+1. Set `CRON_SECRET` in the server's `.env` (see `.env.example`) and restart the site.
+2. Create a scheduled task on the server (run in an elevated PowerShell; use your real
+   domain and secret):
+
+```powershell
+schtasks /Create /TN "Belsalameh membership-ended emails" /SC DAILY /ST 09:00 /RU SYSTEM /TR "powershell -NoProfile -Command Invoke-RestMethod -Method Post -Uri https://YOURDOMAIN/api/cron/membership-ended -Headers @{Authorization='Bearer YOUR_CRON_SECRET'}"
+```
+
+It returns `{"sent":N,"failed":N}`. It does nothing when `EMAILS_ENABLED` is off or the
+option is unticked in Admin › Settings. A failed send is retried on the next run.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |

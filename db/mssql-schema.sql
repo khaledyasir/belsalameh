@@ -37,12 +37,15 @@ CREATE TABLE dbo.Transactions (
     providerRef            NVARCHAR(100) NULL,
     amountMinor            INT           NOT NULL,
     currency               NVARCHAR(3)   NOT NULL CONSTRAINT DF_Transactions_currency DEFAULT 'JOD',
+    durationMonths         INT           NOT NULL CONSTRAINT DF_Transactions_durationMonths DEFAULT 12,  -- length agreed at checkout, per person
     status                 NVARCHAR(20)  NOT NULL CONSTRAINT DF_Transactions_status DEFAULT 'PENDING',
     fullName               NVARCHAR(120) NOT NULL,
     email                  NVARCHAR(256) NOT NULL,
     consentTermsAccepted   BIT           NOT NULL CONSTRAINT DF_Transactions_consentTerms DEFAULT 0,
     consentPrivacyAccepted BIT           NOT NULL CONSTRAINT DF_Transactions_consentPriv  DEFAULT 0,
     consentVersion         NVARCHAR(20)  NULL,
+    consentAdultConfirmed  BIT           NOT NULL CONSTRAINT DF_Transactions_consentAdult DEFAULT 0,
+    party                  NVARCHAR(MAX) NULL,   -- JSON [{fullName,email}] extra people on this order
     failureReason          NVARCHAR(400) NULL,
     rawResponse            NVARCHAR(MAX) NULL,
     ipnReceivedAt          DATETIME2     NULL,
@@ -66,6 +69,7 @@ CREATE TABLE dbo.Members (
     expiryYear    INT           NOT NULL,
     status        NVARCHAR(20)  NOT NULL CONSTRAINT DF_Members_status DEFAULT 'ACTIVE',
     purchasedAt   DATETIME2     NOT NULL,
+    expiryEmailSentAt DATETIME2 NULL,   -- set once the "membership ended" email went out
     transactionId NVARCHAR(30)  NULL,
     createdAt     DATETIME2     NOT NULL CONSTRAINT DF_Members_createdAt DEFAULT SYSUTCDATETIME(),
     updatedAt     DATETIME2     NOT NULL CONSTRAINT DF_Members_updatedAt DEFAULT SYSUTCDATETIME(),
@@ -74,9 +78,21 @@ CREATE TABLE dbo.Members (
     CONSTRAINT FK_Members_transaction  FOREIGN KEY (transactionId) REFERENCES dbo.Transactions(id)
 );
 CREATE UNIQUE INDEX UX_Members_membershipId  ON dbo.Members(membershipId);
-CREATE UNIQUE INDEX UX_Members_transactionId ON dbo.Members(transactionId) WHERE transactionId IS NOT NULL;
+CREATE INDEX IX_Members_transactionId ON dbo.Members(transactionId);  -- one payment can cover several people
 CREATE INDEX IX_Members_email  ON dbo.Members(email);
 CREATE INDEX IX_Members_status ON dbo.Members(status);
+
+/* ---------- MembershipSettings ----------------------------------------------
+   The plan being sold right now: one row (id 'default') edited in Admin > Settings.
+   No row = the built-in defaults from src/lib/membership.ts. */
+CREATE TABLE dbo.MembershipSettings (
+    id              NVARCHAR(20) NOT NULL CONSTRAINT PK_MembershipSettings PRIMARY KEY
+                    CONSTRAINT DF_MembershipSettings_id DEFAULT 'default',
+    priceMinor      INT          NOT NULL,   -- total for durationMonths, per person (JOD: 1000 = 1.000)
+    durationMonths  INT          NOT NULL,
+    sendExpiryEmail BIT          NOT NULL CONSTRAINT DF_MembershipSettings_expiryEmail DEFAULT 1,
+    updatedAt       DATETIME2    NOT NULL CONSTRAINT DF_MembershipSettings_updatedAt DEFAULT SYSUTCDATETIME()
+);
 
 /* ---------- WebhookEvents (MEPS IPN dedupe) ---------------------------------- */
 CREATE TABLE dbo.WebhookEvents (
