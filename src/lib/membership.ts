@@ -51,3 +51,8 @@ export function expiryFrom(from: Date, months: number): { month: number; year: n
   end.setMonth(end.getMonth() + months);
   return { month: end.getMonth() + 1, year: end.getFullYear() };
 }
+
+/** A membership runs to the end of its expiry month. */
+export function hasEnded(m: { expiryMonth: number; expiryYear: number }, now = new Date()): boolean {
+  return now.getTime() > new Date(m.expiryYear, m.expiryMonth, 0, 23, 59, 59).getTime();
+}

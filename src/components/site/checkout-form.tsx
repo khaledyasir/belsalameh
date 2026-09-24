@@ -4,15 +4,18 @@ import { useActionState, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Plus, X } from "lucide-react";
 import {
+  EMAIL_SHARED_NOTE,
   MAX_PEOPLE,
+  NAME_TAKEN_MESSAGE,
   checkoutSchema,
   toFieldErrors,
   initialCheckoutState,
   type CheckoutFieldErrors,
 } from "@/lib/checkout";
+import type { PersonCheck } from "@/lib/identity";
 import type { MembershipPlan } from "@/lib/membership";
 import { formatMoney } from "@/lib/format";
-import { startCheckout } from "./checkout-actions";
+import { checkPeopleAction, startCheckout } from "./checkout-actions";
 import { cn } from "@/lib/utils";
 
 type Values = {
@@ -56,8 +59,34 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
   const uid = useId();
   const fid = (k: string) => `${uid}-${k}`;
 
+  // Live "is this name / email already registered?" results, keyed by row ("main" or the row key).
+  const [checks, setChecks] = useState<Record<string, PersonCheck>>({});
+
   // Server errors only show for fields the user has not since edited.
-  const errors: CheckoutFieldErrors = { ...serverState.errors, ...clientErrors };
+  const baseErrors: CheckoutFieldErrors = { ...serverState.errors, ...clientErrors };
+  // A name that already has an active membership is an error on that field; a shared email is only a note.
+  const errors: CheckoutFieldErrors = { ...baseErrors };
+  if (!errors.fullName && checks.main?.nameTaken) errors.fullName = NAME_TAKEN_MESSAGE;
+  party.forEach((row, i) => {
+    if (checks[row.key]?.nameTaken && !errors.party?.[i]?.fullName) {
+      errors.party = { ...errors.party, [i]: { ...errors.party?.[i], fullName: NAME_TAKEN_MESSAGE } };
+    }
+  });
+  const anyNameTaken = Boolean(checks.main?.nameTaken) || party.some((r) => checks[r.key]?.nameTaken);
+
+  function runCheck(id: string, fullName: string, email: string) {
+    if (fullName.trim().length < 2) return;
+    checkPeopleAction([{ fullName, email }])
+      .then(([c]) => c && setChecks((prev) => ({ ...prev, [id]: c })))
+      .catch(() => {});
+  }
+  function clearCheck(id: string) {
+    setChecks((prev) => {
+      if (!prev[id]) return prev;
+      const { [id]: _drop, ...rest } = prev;
+      return rest;
+    });
+  }
 
   const people = 1 + party.length;
   const total = plan.priceMinor * people;
@@ -72,6 +101,7 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues({ ...values, [key]: value });
+    if (key === "fullName" || key === "email") clearCheck("main");
     // Clear this field's error as the user corrects it.
     setClientErrors((e) => {
       if (!e[key]) return e;
@@ -93,18 +123,20 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
 
   function removePerson(key: number) {
     setParty((p) => p.filter((r) => r.key !== key));
+    clearCheck(String(key));
     // Row indexes shift after a removal, so stale per-row errors would land on the wrong person.
     setClientErrors((e) => ({ ...e, party: undefined, partyList: undefined }));
   }
 
   function setPerson(key: number, field: "fullName" | "email", value: string) {
     setParty((p) => p.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
+    clearCheck(String(key));
     setClientErrors((e) => ({ ...e, party: undefined, partyList: undefined }));
   }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     const found = validate(values, party);
-    if (Object.keys(found).length > 0) {
+    if (Object.keys(found).length > 0 || anyNameTaken) {
       e.preventDefault();
       setClientErrors(found);
       requestAnimationFrame(() => summaryRef.current?.focus());
@@ -146,6 +178,10 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
         </div>
       )}
 
+      <p className="text-xs text-ink-muted">
+        Fields marked <span className="text-danger">*</span> are required.
+      </p>
+
       <Text
         id={fid("fullName")}
         name="fullName"
@@ -155,7 +191,10 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
         value={values.fullName}
         error={errors.fullName}
         onChange={(v) => set("fullName", v)}
-        onBlur={() => onBlur("fullName")}
+        onBlur={() => {
+          onBlur("fullName");
+          runCheck("main", values.fullName, values.email);
+        }}
       />
 
       <Text
@@ -167,8 +206,12 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
         inputMode="email"
         value={values.email}
         error={errors.email}
+        note={checks.main?.emailShared ? EMAIL_SHARED_NOTE : undefined}
         onChange={(v) => set("email", v)}
-        onBlur={() => onBlur("email")}
+        onBlur={() => {
+          onBlur("email");
+          runCheck("main", values.fullName, values.email);
+        }}
       />
 
       <Text
@@ -213,6 +256,7 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
               value={row.fullName}
               error={errors.party?.[i]?.fullName}
               onChange={(v) => setPerson(row.key, "fullName", v)}
+              onBlur={() => runCheck(String(row.key), row.fullName, row.email)}
             />
             <Text
               id={fid(`p${row.key}-email`)}
@@ -225,7 +269,9 @@ export function CheckoutForm({ plan }: { plan: MembershipPlan }) {
               optional
               value={row.email}
               error={errors.party?.[i]?.email}
+              note={checks[row.key]?.emailShared ? EMAIL_SHARED_NOTE : undefined}
               onChange={(v) => setPerson(row.key, "email", v)}
+              onBlur={() => runCheck(String(row.key), row.fullName, row.email)}
             />
           </div>
         ))}
@@ -327,6 +373,7 @@ function Text({
   autoComplete,
   inputMode,
   optional,
+  note,
   onChange,
   onBlur,
 }: {
@@ -337,6 +384,8 @@ function Text({
   type?: string;
   value: string;
   error?: string;
+  /** Friendly, non-blocking message shown under the field (not an error). */
+  note?: string;
   autoComplete?: string;
   inputMode?: "email" | "text";
   optional?: boolean;
@@ -349,6 +398,11 @@ function Text({
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-sm font-medium text-ink">
         {label}
+        {!optional && (
+          <span className="text-danger" aria-hidden>
+            {" "}*
+          </span>
+        )}
       </label>
       {hint && (
         <p id={hintId} className="text-xs text-ink-muted">
@@ -376,6 +430,11 @@ function Text({
       {error && (
         <p id={errId} className="text-xs font-medium text-danger">
           {error}
+        </p>
+      )}
+      {!error && note && (
+        <p role="status" className="text-xs font-medium text-brand-indigo">
+          {note}
         </p>
       )}
     </div>
@@ -413,6 +472,9 @@ function Check({
         />
         <label htmlFor={id} className="text-sm text-ink">
           {children}
+          <span className="text-danger" aria-hidden>
+            {" "}*
+          </span>
         </label>
       </div>
       {error && (

@@ -7,6 +7,7 @@ import { createPendingTransaction, capturePayment } from "@/lib/payments";
 import { getMembershipSettings } from "@/lib/membership-settings";
 import { planTotal } from "@/lib/membership";
 import { audit } from "@/lib/admin-store";
+import { checkPeople } from "@/lib/identity";
 import { db } from "@/lib/db";
 
 /**
@@ -26,6 +27,15 @@ export async function addWalkInMember(_prev: WalkInState, formData: FormData): P
   });
   if (!parsed.success) {
     return { errors: toWalkInFieldErrors(parsed.error), formError: "Please correct the highlighted fields." };
+  }
+
+  // One active membership per name. (The same email under another name is allowed.)
+  const [check] = await checkPeople([parsed.data]);
+  if (check.nameTaken) {
+    return {
+      errors: { fullName: "A membership under this name is already active, so it can't be registered again." },
+      formError: "Please correct the highlighted fields.",
+    };
   }
 
   const { durationMonths } = parsed.data;

@@ -3,11 +3,21 @@ import { z } from "zod";
 /** Most people one order can cover (the payer + 9 others). */
 export const MAX_PEOPLE = 10;
 
+/** Trim and collapse repeated spaces, so "Ali  Test" and "ali test" count as the same name. */
+export const normalizeName = (s: string) => s.trim().replace(/\s+/g, " ");
+export const nameKey = (s: string) => normalizeName(s).toLowerCase();
+
+export const NAME_TAKEN_MESSAGE =
+  "A membership for this name is already active, so it can't be registered again. If this is a different person with the same name, please contact support@belsalameh.com.";
+export const NAME_ON_ORDER_MESSAGE = "This name is already on this order. Each person needs their own membership under their own name.";
+export const EMAIL_SHARED_NOTE = "This email address is already registered under a different name. That's fine, you can continue.";
+
 const personName = z
   .string()
   .trim()
   .min(2, "Enter the full name as it appears on the passport")
-  .max(120, "That name is too long");
+  .max(120, "That name is too long")
+  .transform(normalizeName);
 
 /**
  * Checkout form contract — shared by the client form and the server action so
@@ -48,6 +58,15 @@ export const checkoutSchema = z
   .refine((d) => d.email === d.confirmEmail, {
     path: ["confirmEmail"],
     message: "The email addresses do not match",
+  })
+  .superRefine((d, ctx) => {
+    // The same name twice on one order is a duplicate registration.
+    const seen = new Set([nameKey(d.fullName)]);
+    d.party.forEach((p, i) => {
+      const k = nameKey(p.fullName);
+      if (seen.has(k)) ctx.addIssue({ code: "custom", path: ["party", i, "fullName"], message: NAME_ON_ORDER_MESSAGE });
+      seen.add(k);
+    });
   });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

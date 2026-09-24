@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkoutSchema, toFieldErrors, type CheckoutState } from "@/lib/checkout";
+import { NAME_TAKEN_MESSAGE, checkoutSchema, toFieldErrors, type CheckoutFieldErrors, type CheckoutState } from "@/lib/checkout";
+import { checkPeople, type PersonCheck } from "@/lib/identity";
 import { createPendingTransaction } from "@/lib/payments";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -45,6 +46,17 @@ export async function startCheckout(
     return { errors: {}, formError: "Too many attempts. Please wait a few minutes and try again." };
   }
 
+  // Same name = duplicate registration (blocked). Same email under another name is fine, so it is not checked here.
+  const checks = await checkPeople([parsed.data, ...parsed.data.party]);
+  const taken: CheckoutFieldErrors = {};
+  if (checks[0].nameTaken) taken.fullName = NAME_TAKEN_MESSAGE;
+  checks.slice(1).forEach((c, i) => {
+    if (!c.nameTaken) return;
+    taken.party ??= {};
+    taken.party[i] = { fullName: NAME_TAKEN_MESSAGE };
+  });
+  if (taken.fullName || taken.party) return { errors: taken, formError: "Please correct the highlighted fields." };
+
   const { reference } = await createPendingTransaction({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
@@ -53,4 +65,15 @@ export async function startCheckout(
   });
 
   redirect(`/checkout/processing?ref=${encodeURIComponent(reference)}`);
+}
+
+/**
+ * Live check used while the form is being filled in (name already registered? email already used
+ * under another name?). Rate-limited; the same name rule is enforced again on submit above.
+ */
+export async function checkPeopleAction(people: { fullName: string; email: string }[]): Promise<PersonCheck[]> {
+  const list = people.slice(0, 10).map((p) => ({ fullName: String(p.fullName ?? "").slice(0, 120), email: String(p.email ?? "").slice(0, 256) }));
+  const ip = await clientIp();
+  if (!rateLimit(`check:ip:${ip}`, 60, 10 * 60_000)) return list.map(() => ({ nameTaken: false, emailShared: false }));
+  return checkPeople(list);
 }
