@@ -13,21 +13,20 @@ export async function savePlanSettings(_prev: PlanState, formData: FormData): Pr
   const parsed = planSettingsSchema.safeParse({
     price: formData.get("price"),
     durationMonths: formData.get("durationMonths"),
-    sendExpiryEmail: formData.get("sendExpiryEmail"),
   });
   if (!parsed.success) {
     return { errors: firstErrors<keyof PlanFieldErrors>(parsed.error), formError: "Please correct the highlighted fields." };
   }
 
-  const { price: priceMinor, durationMonths, sendExpiryEmail } = parsed.data;
+  const { price: priceMinor, durationMonths } = parsed.data;
   const before = await getMembershipSettings();
-  await saveMembershipSettings({ priceMinor, durationMonths, sendExpiryEmail });
+  await saveMembershipSettings({ priceMinor, durationMonths });
 
   await audit("settings.membership.updated", {
     actorId: session.user.id,
     entity: "MembershipSettings",
     entityId: "default",
-    detail: `price ${before.priceMinor} -> ${priceMinor}, months ${before.durationMonths} -> ${durationMonths}, expiry email ${before.sendExpiryEmail} -> ${sendExpiryEmail}`,
+    detail: `price ${before.priceMinor} -> ${priceMinor}, months ${before.durationMonths} -> ${durationMonths}`,
   });
 
   revalidatePath("/admin/settings");

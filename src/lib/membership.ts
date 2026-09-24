@@ -16,7 +16,6 @@ export const MEMBERSHIP = {
   currency: "JOD",
   /** months from purchase date; drives the "Month YYYY" expiry (placeholder) */
   durationMonths: 12,
-  sendExpiryEmail: true,
 } as const;
 
 /** The plan customers are offered right now: `priceMinor` is the total for `durationMonths`, per person. */

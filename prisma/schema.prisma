@@ -45,7 +45,6 @@ model Member {
   expiryYear   Int
   status       String   @default("ACTIVE") @db.NVarChar(20) // ACTIVE | EXPIRED | REVOKED
   purchasedAt  DateTime
-  expiryEmailSentAt DateTime? // set once the "your membership has ended" email went out
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -96,7 +95,6 @@ model MembershipSettings {
   id              String   @id @default("default") @db.NVarChar(20)
   priceMinor      Int // total price for `durationMonths`, per person, in minor units (JOD: 1000 = 1.000)
   durationMonths  Int
-  sendExpiryEmail Boolean  @default(true) // email members when their membership ends, with a link to renew
   updatedAt       DateTime @updatedAt
 
   @@map("MembershipSettings")

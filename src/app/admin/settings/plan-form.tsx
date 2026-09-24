@@ -14,7 +14,7 @@ export function PlanForm({
   initial,
   currency,
 }: {
-  initial: { priceMinor: number; durationMonths: number; sendExpiryEmail: boolean };
+  initial: { priceMinor: number; durationMonths: number };
   currency: string;
 }) {
   const [state, formAction, isPending] = useActionState(savePlanSettings, initialPlanState);
@@ -58,21 +58,6 @@ export function PlanForm({
           />
         )}
       </Field>
-
-      <label className="flex items-start gap-3 text-sm text-ink">
-        <input
-          type="checkbox"
-          name="sendExpiryEmail"
-          defaultChecked={initial.sendExpiryEmail}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-indigo"
-        />
-        <span>
-          <span className="font-medium">Email members when their membership ends</span>
-          <span className="mt-0.5 block text-xs text-ink-muted">
-            They get one email with a link back to the join form to extend. Nothing is ever charged automatically.
-          </span>
-        </span>
-      </label>
 
       <div className="rounded-xl bg-brand-cream/70 px-4 py-3 text-sm" aria-live="polite">
         {ready && end ? (

@@ -22,7 +22,6 @@ export const priceSchema = z
 export const planSettingsSchema = z.object({
   price: priceSchema,
   durationMonths: durationMonthsSchema,
-  sendExpiryEmail: z.coerce.boolean(),
 });
 
 export type PlanFieldErrors = Partial<Record<"price" | "durationMonths", string>>;

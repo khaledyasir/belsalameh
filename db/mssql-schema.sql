@@ -69,7 +69,6 @@ CREATE TABLE dbo.Members (
     expiryYear    INT           NOT NULL,
     status        NVARCHAR(20)  NOT NULL CONSTRAINT DF_Members_status DEFAULT 'ACTIVE',
     purchasedAt   DATETIME2     NOT NULL,
-    expiryEmailSentAt DATETIME2 NULL,   -- set once the "membership ended" email went out
     transactionId NVARCHAR(30)  NULL,
     createdAt     DATETIME2     NOT NULL CONSTRAINT DF_Members_createdAt DEFAULT SYSUTCDATETIME(),
     updatedAt     DATETIME2     NOT NULL CONSTRAINT DF_Members_updatedAt DEFAULT SYSUTCDATETIME(),
@@ -90,7 +89,6 @@ CREATE TABLE dbo.MembershipSettings (
                     CONSTRAINT DF_MembershipSettings_id DEFAULT 'default',
     priceMinor      INT          NOT NULL,   -- total for durationMonths, per person (JOD: 1000 = 1.000)
     durationMonths  INT          NOT NULL,
-    sendExpiryEmail BIT          NOT NULL CONSTRAINT DF_MembershipSettings_expiryEmail DEFAULT 1,
     updatedAt       DATETIME2    NOT NULL CONSTRAINT DF_MembershipSettings_updatedAt DEFAULT SYSUTCDATETIME()
 );
 

@@ -28,7 +28,6 @@ export default async function SettingsPage() {
             initial={{
               priceMinor: settings.priceMinor,
               durationMonths: settings.durationMonths,
-              sendExpiryEmail: settings.sendExpiryEmail,
             }}
             currency={settings.currency}
           />
