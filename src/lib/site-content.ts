@@ -24,7 +24,7 @@ export const SITE = {
     heading: "Slightly overweight luggage? Pay less, right at the airport counter.",
     body: `No pre-booking, no pre-paying. Belsalameh unlocks protected flat rates for 1–3 kg of excess baggage, co-created with founding partner ${PARTNER}, paid directly at check-in.`,
     primaryCta: "Unlock member rates",
-    microcopy: `One-time annual fee · Early Bird access through ${EARLY_BIRD_DATE} · Zero auto-renewals`,
+    microcopy: `One-time membership fee · Early Bird access through ${EARLY_BIRD_DATE} · Zero auto-renewals`,
   },
 
   trustBadges: [
@@ -51,7 +51,7 @@ export const SITE = {
       },
       {
         title: "Zero auto-renewals",
-        body: "Pay once for your annual membership. We never set up recurring billing or automatic deductions.",
+        body: "Pay once for your membership period. We never set up recurring billing or automatic deductions.",
       },
       {
         title: "Guaranteed member pricing",
@@ -115,7 +115,7 @@ export const SITE = {
       },
       {
         q: "Why is there a membership fee, and is it automatically renewed?",
-        a: `Your membership fee grants access to unlisted member services and dedicated airport rates co-created with partner airlines that simply aren't available to the public. Memberships are standard annual memberships; as a launch promotion, a limited number of Early Bird members enjoy full benefits extended through ${EARLY_BIRD_DATE}. Fees are strictly non-refundable and non-recurring, we never set up automatic deductions or auto-renewals. When your membership period ends, you simply rejoin online whenever you next travel.`,
+        a: `Your membership fee grants access to unlisted member services and dedicated airport rates co-created with partner airlines that simply aren't available to the public. Memberships last for the period shown at checkout, before you pay; as a launch promotion, a limited number of Early Bird members enjoy full benefits extended through ${EARLY_BIRD_DATE}. Fees are strictly non-refundable and non-recurring, we never set up automatic deductions or auto-renewals. When your membership period ends, you simply rejoin online whenever you next travel.`,
       },
       {
         q: "Are there any hidden fees or unpredictable charges?",

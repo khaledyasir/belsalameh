@@ -28,9 +28,9 @@ export const TERMS: LegalDoc = {
       ],
     },
     {
-      heading: "2. Annual membership, Early Bird terms & non-recurring fees",
+      heading: "2. Membership period, Early Bird terms & non-recurring fees",
       body: [
-        "Standard annual membership: memberships are issued on an annual basis and remain active for twelve (12) calendar months from the date of activation.",
+        "Standard membership: each membership is issued for the period stated at checkout before you pay, and remains active from the date of activation until the expiry month and year shown on your confirmation email.",
         "Early Bird launch promotion: a limited number of Early Bird memberships activated during the launch phase remain fully valid and active from the date of purchase until December 31, 2028, at no additional charge.",
         "Non-refundable & non-recurring fees: membership fees cover digital profile activation, administration, and access to unlisted member services and protected pricing. Membership fees are strictly non-refundable and non-recurring.",
         "Zero auto-renewals & no account creation: Belsalameh will never set up recurring billing, auto-renewals, or automatic deductions. Activation requires no login credentials, password setup, or digital account. Upon expiration you simply rejoin online at your convenience.",
